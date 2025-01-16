@@ -165,6 +165,78 @@ public class AppState
         }
     }
 
+    public async Task<Patient?> GetPatientById(int patientId, int userId)
+    {
+
+        //This will find a specific patient
+        var patient = await _dbContext.Patients.SingleOrDefaultAsync(p => p.PatientId == patientId && p.ProfileId == userId);
+
+        //If the appointment is null it means it wasn't found
+        if (patient == null)
+        {
+            return null;
+        }
+        //If appointment was found then it will return the Appointment object
+        else
+        {
+            return patient;
+        }
+
+    } // end of GetAppointmentById function
+
+    public async Task<bool> EditPatient(int patientId, int userId, Patient editedPatient)
+    {
+        try
+        {
+            var patient = await _dbContext.Patients.SingleOrDefaultAsync(p => p.PatientId == patientId && p.ProfileId == userId);
+            if (patient == null)
+            {
+                return false;
+            }
+            else
+            {
+                patient.FirstName = editedPatient.FirstName;
+                patient.LastName = editedPatient.LastName;
+                patient.InsuranceCompany = editedPatient.InsuranceCompany;
+                patient.InsurancePolicyNumber = editedPatient.InsurancePolicyNumber;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    //potentially can add userId as an argument to be more secure
+    public async Task<bool> DeletePatient(int patientId)
+    {
+        var patient = await _dbContext.Patients.FindAsync(patientId);
+        if (patient != null)
+        {
+            _dbContext.Patients.Remove(patient);
+            await _dbContext.SaveChangesAsync();
+
+
+            //This is part of an idea to make sure everything connected to a patient is delete
+            // dbContext.Appointments.Remove(patient);
+            // Appointments.RemoveAll(a => a.PatientId == patientId); // updates the appointments list in state
+            // OrderedAppointments.RemoveAll(o => o.PatientId == patientId); //updates the ordered appointments list in state
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+
+    }
+
+
+
 
     // --------------End of Patient Account functions Section ----------
 
