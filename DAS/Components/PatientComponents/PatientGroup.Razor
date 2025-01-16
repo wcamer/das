@@ -1,0 +1,79 @@
+@* @using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer *@
+@inject AppState AppState
+@using DAS.Models
+
+
+
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Options
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Here the logic will go "for each appointment in appointments display the following: 
+                        Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
+
+            @if (patientGroupList != null)
+            {
+                @foreach(var p in patientGroupList)
+                {
+                    @* hardcode test for Albert Wesker. profileID 3 patient ID 5 *@
+                    @if (p.ProfileId == 1 || p.PatientId == 1)
+                    {
+                         <tr>
+                            <td>
+                                @(p.FirstName) @(p.LastName)
+                            </td>
+                            <td>
+                                <button>Edit</button> |
+                                <button>Details</button>
+                            </td>
+                        </tr>
+                    }
+                    
+                }
+            }
+            @* <tr>
+                <td>
+                    FirstName LastName
+                </td>
+                <td>
+                    <button>Edit</button> |
+                    <button>Details</button>
+                </td>
+            </tr> *@
+
+
+
+
+        </tbody>
+    </table>
+
+
+</div>
+
+
+ 
+@code{
+
+    private List<Patient> patientGroupList = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AppState.LoadListsAsync();
+        patientGroupList = AppState.Patients;
+    }
+
+}

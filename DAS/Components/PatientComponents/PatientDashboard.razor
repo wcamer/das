@@ -1,0 +1,176 @@
+@using DAS.Components.PatientComponents.Appointment
+
+<PageTitle>Patient Dashboard</PageTitle>
+
+<h2>Patient Dashboard</h2>
+
+<div>
+    <h2>Account Information</h2>
+    <div>
+        <div>
+            <span>Name:</span> <span>Cloud Strife</span>
+        </div>
+        
+        
+        <div>
+            <span>Insurance:</span> <span>Shinra Power Co.</span>
+        </div>
+
+        <div>
+            
+            <span>Policy:</span> <span>77777</span>
+        </div>
+        @* <div>
+            <p>Insurance:</p>
+            <p>Shinra Power Co</p>
+            <p>Policy:</p>
+            <p>77777</p>
+        </div> *@
+    </div>
+</div>
+
+<div>
+    <h2>Options</h2>
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="/editAccount">
+            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit Account
+        </NavLink>
+    </div>
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="/appointment">
+            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add Appointment
+        </NavLink>
+    </div>
+
+
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="/addGroupMember">
+            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add New Patient To Group
+        </NavLink>
+    </div>
+
+  
+
+</div>
+
+<div>
+    <div>
+        <h2>Patient Group</h2>
+        <PatientGroup />
+         @* <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Options
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    Cloud Strife
+                </td>
+                <td>
+                    <button>Edit</button> 
+                    <button>Details</button>
+                </td>
+                
+            </tr>
+        </tbody>
+    </table> *@
+    </div>
+    <div>
+        <h2>Upcoming Appointments</h2>
+        <PatientUpcomingAppointments />
+        @* <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Appointment Date
+                    </th>
+                    <th>
+                        Time
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>
+                        Cloud Strife
+                    </td>
+                    <td>
+                        01/15/25
+                    </td>
+                    <td>
+                        7:00 AM
+                    </td>
+                    <td>
+                        Pending
+                    </td>
+                    <td>
+                        <button>Edit</button>
+                    </td>
+
+                    
+                </tr>
+            </tbody>
+        </table> *@
+
+    </div>
+    <div>
+        <h2>Appointment History</h2>
+        <PatientAppointmentHistory />
+            @* <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Appointment Date
+                        </th>
+                    
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>
+                            Cloud Strife
+                        </td>
+
+                        <td>
+                            01/11/25
+                        </td>
+                        
+                        <td>
+                            Completed
+                        </td>
+
+                        
+                    </tr>
+                </tbody>
+            </table> *@
+    </div>
+
+
+   
+   
+    
+</div>

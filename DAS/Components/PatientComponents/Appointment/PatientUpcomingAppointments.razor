@@ -1,0 +1,182 @@
+@using Microsoft.EntityFrameworkCore
+@using DAS.Models
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Appointment Date
+                </th>
+                <th>
+                    Time
+                </th>
+                <th>
+                    Status
+                </th>
+                <th></th>
+                @* this is for testing *@
+                <th>Appointment Id</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Here the logic will go "for each appointment in appointments display the following: 
+                        Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
+
+            @if (appointments != null)
+            {
+                @foreach (var appointment in appointments)
+                {
+                    @if (appointment.PatientId == 1 || appointment.AppointSetterId == 1 && appointment.Status == "Pending")
+                    {
+                        var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
+
+
+                        <tr>
+                            <td>
+                                @(appointment.Name)
+                            </td>
+                            <td>
+                                @(appointment.Date.ToString("MM/dd/yyyy"))
+                            </td>
+                            <td>
+                                @(appointment.Time)
+                            </td>
+
+                            <td>
+                                @(appointment.Status)
+                            </td>
+                            @* The edit and delete options will depend on what the status is.  
+                                    If it's pending, then edit and delete will be displayed, 
+                                    else then it will show a message that it isn't changeable  *@
+                            @*  hardcooded for Albert wesker*@
+
+                            <td>
+                                <button>
+                                    @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
+                                    <NavLink class="nav-link" href=@editRoute>
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                    </NavLink>
+                                </button>
+                                @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
+                                @* <a value =@AppState.editAppointmentTarget></a> *@
+                                @* <a asp-action="Edit">Edit</a> *@
+                                @* <a asp-action="Delete">Delete</a> | *@
+                                @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
+                            </td>
+                            @* for dev testing *@
+                            <td>
+                                @(appointment.AppointmentId)
+                            </td>
+
+                        </tr>
+                    }
+
+                }
+            }
+            else
+            {
+                <p>-------- No Appointments Schdeduled ---------</p>
+            }
+
+
+
+
+        </tbody>
+    </table>
+
+
+</div>
+
+@code {
+
+    private List<Appointment> appointments = [];
+
+
+
+
+    @* private int loggedInUser = 0; *@
+
+    @* private string? result; *@
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        //Gets data in the lists and synced up
+        await AppState.LoadListsAsync();
+
+        //Copies the the data in the Appointments in the state file to the local variable
+        appointments = AppState.OrderedAppointments;
+
+
+
+
+
+
+    }
+
+
+    //Onafterrenderasync was here
+
+
+    //ChangEditAppointmentTargett was here
+
+
+    //SAveEditAppointment Target was here
+
+
+
+    //testing purposes
+    @* private async Task<int> GetEditAppointmentTarget()
+    {
+        //returns items as a string always
+        var targetString = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "AppointmentTarget");
+
+        var target = int.TryParse(targetString, out int id);
+        if (target == true)
+        {
+
+            Console.WriteLine($"{id} ^^^^^^^^^^^^^^^^^^^");
+
+            return id;
+
+        }
+        else
+        {
+            Console.WriteLine($"{id} ?????????????????????????");
+            return 0;
+        }
+
+    } *@
+
+
+    //LOGIN stuff
+
+    //GetLoggedInuser was here
+
+
+
+    // SetLoggedInuser was here
+
+
+
+
+
+
+
+
+
+
+}

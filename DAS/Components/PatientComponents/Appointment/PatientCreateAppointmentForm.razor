@@ -1,0 +1,192 @@
+@page "/appointment" 
+@using System.ComponentModel.DataAnnotations
+@using DAS.Models
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h1>Create Appointment</h1>
+
+@* @if(AppState.User.UserId < 1 )
+{
+    <div>
+        <p>Please log in to make an appointment.  Thank You!</p>
+    </div>
+}
+else
+{ *@
+
+<EditForm Model="@newAppointment" OnValidSubmit="@(CreatePatientAppointment)" FormName="PatientCreateAppointmentForm">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
+
+    @* <div>
+        <label>Name:</label>
+        <InputText @bind-Value="exAppoint.Appointment.Name"  />
+        <ValidationMessage For="@(() => appointment.Name)" />
+    </div> *@
+
+    <div>
+        <label>Date:</label>
+        <InputDate @bind-Value="newAppointment.Date" />
+        <ValidationMessage For="@(() => newAppointment.Date)" />
+    </div>
+
+    <div>
+        <label>Time:</label>
+        <InputText @bind-Value="newAppointment.Time" />
+        <ValidationMessage For="@(() => newAppointment.Time)" />
+    </div>
+    <div>
+        <label>Name:</label>
+        <InputSelect @bind-Value="newAppointment.PatientId">
+        @* <InputSelect> *@
+            <option value=""> Select A Patient </option>
+            @foreach (var p in patients)
+            {
+                @* This is hardcoded for Albert Wesker profileid 1 and patient id 1 *@
+                @if(p.ProfileId == 1 || p.PatientId == 1)
+                {
+                    @* <option value="@p.PatientId">@p.FirstName @p.LastName</option> *@
+                    <option value="@p.PatientId">@p.FirstName @p.LastName</option>
+
+                }
+                
+            } 
+        </InputSelect>
+        <ValidationMessage For="@(() => newAppointment.PatientId)" />
+    </div>
+
+ 
+
+    <button type="submit" >Submit</button>
+
+    
+</EditForm>
+
+
+@code {
+
+    private List<Patient> patients = [];
+    
+    //This is needed to give the form its structure
+    private Appointment newAppointment = new Appointment
+    {
+        PatientId = -1, // default part to check to see if user is logged in or not
+        Name = "FirstName LastName",
+        Date = DateTime.Now,
+        Time = "7:00 PM",
+        Status = "Pending",
+        AppointSetterId = -1 //default part of check to see if user is logged in
+
+
+    };
+    // This will contain a specific message that will be shown
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Loading up the lists from the DB
+        await AppState.LoadListsAsync();
+        patients = AppState.Patients ;
+    }
+
+     
+ 
+
+    
+   
+
+    @* private int currentYear = DateTime.Now.Year; *@
+
+    private void HandleValidSubmit()
+    {
+        message = $"Apointment successfully set for {newAppointment.Name} for {newAppointment.Date.ToString("MM-dd-yyyy")} at {newAppointment.Time}";
+    
+        //send user back the the home page but can be changed to send back to customer's dashboard
+        //NavigationManager.NavigateTo("/");
+
+    }
+
+    //onInitializedAsync goes here if used
+
+    
+
+    // OnAFterRenderAsync goes here if used.
+    
+
+
+    private async Task CreatePatientAppointment()
+    {
+
+        // Implement creation logic here
+
+        //hardcoded example for albert wesker profileid NOTE: this will be changed
+        newAppointment.AppointSetterId = 1;
+
+        
+        // This will get a Patient object and assign to selectedPatient
+        var selectedPatient =  patients.FirstOrDefault(p => p.PatientId == newAppointment.PatientId);
+
+        //This will check to make sure there is a valid patient that was selected
+        if(selectedPatient != null)
+        {
+            //This will assign the name who the appointment is for
+            newAppointment.Name = $"{selectedPatient.FirstName} {selectedPatient.LastName}";
+            
+            Console.WriteLine($"{newAppointment.AppointmentId} {newAppointment.Name} {newAppointment.AppointSetterId} {newAppointment.Time}!!!!!!!!!!!!");
+            
+            
+            //This will generate a new appointment everytime this function is called making every appointment unique
+            Appointment CreatedAppointment = new Appointment
+            {
+                PatientId = newAppointment.PatientId, // default part to check to see if user is logged in or not
+                Name = newAppointment.Name,
+                Date = newAppointment.Date,
+                Time = newAppointment.Time,
+                Status = "Pending",
+                AppointSetterId = newAppointment.AppointSetterId //default part of check to see if user is logged in
+            };
+
+             Console.WriteLine($"{CreatedAppointment.AppointmentId} {CreatedAppointment.Name} {CreatedAppointment.AppointSetterId} {CreatedAppointment.Time} ********************");
+
+
+            var addNewAppointmentToDb = await AppState.AddAppointment(CreatedAppointment);
+            //testing line
+            //var addNewAppointmentToDb = true;
+
+
+            if(addNewAppointmentToDb == true)
+            {
+                //updates AppState to reflect changes
+                StateHasChanged();
+                
+                HandleValidSubmit();
+            }
+            else
+            {
+                //error message will be displayed 
+                message = "Something went wrong.  Appointment Creation Canceled. Try again later or try scheduling an appointment for a different time and/or date";
+                Console.WriteLine(message);
+            }
+        }
+        //if there wasn't a valid patient selected it will display a specific error message
+        else
+        {
+            message = "Please select a patient for an appointment";
+        }
+        
+
+
+    }// end of CreatePatientAppointment
+
+
+
+
+}
