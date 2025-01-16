@@ -1,0 +1,244 @@
+@page "/edit-patient/{patientId:int}"
+@using DAS.Models
+@using DAS.Components
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h1>Edit Patient</h1> 
+<EditForm Model="@patient" FormName="PatientEditForm" disabled="@isFormDisabled"> 
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
+    @if (deleteWarningFlag == true) 
+    {
+        <div>
+            <button @onclick="ProcessDeletePatient" disabled="@isFormDisabled">Yes</button>
+            <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+        </div>
+    }
+
+    
+    <div>
+        <label>First Name:</label>
+        <InputText @bind-Value="patient.FirstName" disabled="@isFormDisabled" />
+        <ValidationMessage For="@(() =>patient.FirstName)" />
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <InputText @bind-Value="patient.LastName" disabled="@isFormDisabled" />
+        <ValidationMessage For="@(() => patient.LastName)" />
+    </div>
+
+    <div>
+        <label>Insurance Company:</label>
+        <InputText @bind-Value="patient.InsuranceCompany" disabled="@isFormDisabled" />
+        <ValidationMessage For="@(() => patient.InsuranceCompany)" />
+    </div>
+
+    <div>
+        <label>Insurance Policy Number:</label>
+        <InputText @bind-Value="patient.InsurancePolicyNumber" disabled="@isFormDisabled" />
+        <ValidationMessage For="@(() => patient.InsurancePolicyNumber)" />
+    </div>
+
+     <div>
+        <label>Patient Data For:</label>
+        <input value="@targetPatient" disabled />
+    </div>
+
+    <button type="submit" @onclick="HandleValidSubmit" disabled="@isFormDisabled">Submit</button>
+    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@isFormDisabled">Delete</button>
+</EditForm>
+
+@code {
+    //Structure of the form
+    
+    private Patient patient = new Patient
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        ProfileId = -1,
+        InsuranceCompany = "Uninsured", // placeholder info but might be changed
+        InsurancePolicyNumber = "uninsured" // this is a string in case policy number has letters
+
+    };
+
+    private Patient oldPatient = new Patient
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        ProfileId = -1,
+        InsuranceCompany = "Uninsured", // placeholder info but might be changed
+        InsurancePolicyNumber = "uninsured" // this is a string in case policy number has letters
+    };
+
+    [Parameter]
+    public int patientId {get; set;}
+    private string? message;
+    @* int appointmentID; *@
+    int userId;
+    bool deleteWarningFlag = false;
+    
+    //This is a flag to disable the form if the appointment is deleted
+    bool isFormDisabled = false;
+
+    string? targetPatient;
+    private List<Patient> patients = [];
+    
+
+
+    //testing purposes
+    @* bool dataLoadedFlag = false; *@
+    private string deleteWarningMessage = $"Are you sure you want to delete this patient? (If you click yes, this will permanently delete the patient)";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Loading up the lists from the DB
+        await AppState.LoadListsAsync();
+        patients = AppState.Patients ;
+
+        //note this is hardcoded for albert wesker
+        userId = 1;
+
+        var foundPatient = await AppState.GetPatientById(patientId , userId);
+        if(foundPatient != null)
+        {
+            patient = foundPatient;
+            
+            targetPatient = $"{foundPatient.FirstName } {foundPatient.LastName}";
+
+
+            //This will retain appointment info before it gets changed.
+            oldPatient = new Patient
+            {
+                PatientId = foundPatient.PatientId,
+                FirstName = foundPatient.FirstName,
+                LastName = foundPatient.LastName,
+                InsuranceCompany = foundPatient.InsuranceCompany,
+                InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
+            };
+        }
+        else
+        {
+            message = "Could not find the patient...";
+        }
+    }
+
+    // OnAfterRenderAsnc(bool firstRender) goes here
+    
+    
+
+
+    @* private async Task HandleValidSubmit() *@
+    private async Task HandleValidSubmit()
+    {
+        // Logic for handling form submission goes here
+        @* return Task.CompletedTask; // Return a completed task *@
+        @* message = "Appointment Successfully updated.";  *@
+        await SubmitEditPatient(patient);
+
+    }
+
+    //This will prep the edited appointment and then send it off
+    private async Task SubmitEditPatient(Patient editedPatient)
+    {
+        
+
+        // Implement edit logic here
+
+        //hardcoded example for albert wesker profileid NOTE: this will be changed
+        @* appointment.AppointSetterId = 1; *@
+
+        
+        // This will get a Patient object and assign to selectedPatient
+        var selectedPatient =  patients.FirstOrDefault(p => p.PatientId == editedPatient.PatientId);
+
+        //This will check to make sure there is a valid patient that was selected
+        if(selectedPatient != null)
+        {
+           
+            
+            //This will take in the "id" that was a route parameter, the user's id (in testing it is hardcoded for Albert wesker profileId 1), and the appointment
+            var editedPatientToDb = await AppState.EditPatient(patientId, userId, editedPatient);
+            //testing line
+            @* var editedPatientToDb = false; *@
+
+
+            if(editedPatientToDb == true)
+            {
+                //updates AppState to reflect changes
+                StateHasChanged();
+                
+                @* await HandleValidSubmit(); *@
+                message = $"Patient updated successfully! \nPrevious Patient Info: Name - {oldPatient.FirstName} {oldPatient.LastName} Insurance Company - {oldPatient.InsuranceCompany} Policy Number - {oldPatient.InsurancePolicyNumber} \nUpdated Appointment Info:  Name - {editedPatient.FirstName} {editedPatient.LastName} Insurance Company - {editedPatient.InsuranceCompany} Policy Number - {editedPatient.InsurancePolicyNumber}  ";
+                //This will replace the previous data in OldAppointment now that we don't need it anymore since it was displayed.
+                oldPatient = new Patient
+                {
+                    
+                    FirstName = editedPatient.FirstName,
+                    LastName = editedPatient.LastName,
+                    InsuranceCompany = editedPatient.InsuranceCompany,
+                    InsurancePolicyNumber = editedPatient.InsurancePolicyNumber
+                };
+
+                targetPatient = $"{editedPatient.FirstName } {editedPatient.LastName}";
+            }
+            else
+            {
+                //error message will be displayed 
+                message = "Something went wrong.  Patient Update Canceled. Try again later. Unable to find patient to update";
+                
+            }
+        }
+        //if there wasn't a valid patient selected it will display a specific error message
+        else
+        {
+            message = "Something went wrong.  The patient you are trying to edit may not exist.";
+        }
+        
+
+
+    }// end of SubmitEditPatientAppointment
+
+
+    private async Task ProcessDeletePatient()
+    {
+       var PatientDeletionCompleted = await AppState.DeletePatient(patient.PatientId);
+        deleteWarningFlag = false;
+
+        // test if the deletion succeeded results = success
+        @* var PatientDeletionCompleted = true; *@
+
+        //test if the deletion failed: results = success
+        @* var PatientDeletionCompleted = false; *@
+
+       if (PatientDeletionCompleted == true)
+       {
+            message = "Patient Deleted Successfully.  Returning to Dashboard";
+            isFormDisabled = true;
+            await Task.Delay(2000);
+            //This is for testing to see if the navigation will redirect after it is completed
+            //This worked
+            NavigationManager.NavigateTo("/dashboard");
+       }
+       else
+       {
+            message = "Something went wrong.  Deletion Operation canceled";
+            
+       }
+
+
+    }// end of ProcessDeletePatientAppointment
+
+
+
+
+
+
+}@*  end of @code block  *@

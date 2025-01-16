@@ -32,13 +32,23 @@
                     @* hardcode test for Albert Wesker. profileID 3 patient ID 5 *@
                     @if (p.ProfileId == 1 || p.PatientId == 1)
                     {
+                        var patientEditRoute = $"/edit-patient/{p.PatientId}";
+                        var patientDetailsRoute = $"/patient-details/{p.PatientId}";
                          <tr>
                             <td>
                                 @(p.FirstName) @(p.LastName)
                             </td>
                             <td>
-                                <button>Edit</button> |
-                                <button>Details</button>
+                                <button>
+                                    <NavLink class="nav-link" href=@patientEditRoute>
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                    </NavLink>
+                                </button> |
+                                <button>
+                                    <NavLink class="nav-link" href=@patientDetailsRoute>
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Details
+                                    </NavLink>
+                                </button>
                             </td>
                         </tr>
                     }
