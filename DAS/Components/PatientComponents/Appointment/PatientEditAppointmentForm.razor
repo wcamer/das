@@ -9,8 +9,7 @@
 @inject IJSRuntime JSRuntime
 
 
-<h1>Edit Appointment</h1>
-@* <EditForm Model="@appointment" OnValidSubmit=@(HandleValidSubmit) FormName="EditAppointmentForm"> *@
+<h1>Edit Appointment</h1> 
 <EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@isFormDisabled"> 
     <DataAnnotationsValidator />
     <ValidationSummary />
