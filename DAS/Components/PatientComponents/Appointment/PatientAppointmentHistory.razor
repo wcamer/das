@@ -1,0 +1,140 @@
+@using Microsoft.EntityFrameworkCore
+@using DAS.Models
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+
+@if (appointments != null)
+{
+    @* hardcoded for albert wesker appointsetterid 1 and patientid 1 *@
+    @* hardcoded fail test is 10 *@
+    @if (appointments.Any(a => (a.AppointSetterId == 1 || a.PatientId == 1 && a.Status == "Completed")))
+    {
+        <div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Appointment Date
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                        <th>|</th>
+                        @* this is for testing *@
+                        <th>Appointment Id</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @* Go through all the appointments and if they PatientId or ApointSetterId is equal to the logged in user AND the Status is "Completed"*@
+                    @foreach (var appointment in appointments)
+                    {
+                        @* This is hardcodedfor albert wesker profileid 1 and patientid 1 *@
+                        @if ((appointment.PatientId == 1 || appointment.AppointSetterId == 1) && appointment.Status == "Completed")
+                        {
+                            <tr>
+                                <td>
+                                    @(appointment.Name)
+                                </td>
+                                <td>
+                                    @(appointment.Date.ToString("MM/dd/yyyy"))
+                                </td>
+
+                                <td>
+                                    @(appointment.Status)
+                                </td>
+
+                                @* for dev testing *@
+                                <td>
+                                    @(appointment.AppointmentId)
+                                </td>
+
+                            </tr>
+                        }
+
+                    }
+
+
+
+                </tbody>
+            </table>
+
+
+        </div>
+    }
+    else
+    {
+        <div>
+            <p>--------- No History Yet -----------</p>
+            <p>Appointments must be completed To show here</p>
+        </div>
+    }
+}
+else
+{
+    <div>
+        <p>--------- No History Yet To Show-----------</p>
+    </div>
+
+}
+
+
+
+@code {
+
+    private List<Appointment> appointments = [];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        //Gets data in the lists and synced up
+        await AppState.LoadListsAsync();
+
+        //Copies the the data in the Appointments in the state file to the local variable
+        appointments = AppState.OrderedAppointments;
+
+
+
+
+
+    }
+
+
+    //Onafterrenderasync was here
+
+
+    //ChangEditAppointmentTargett was here
+
+
+    //SAveEditAppointment Target was here
+
+
+
+
+
+    //LOGIN stuff
+
+    //GetLoggedInuser was here
+
+
+
+    // SetLoggedInuser was here
+
+
+
+
+
+
+
+
+
+
+}

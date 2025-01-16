@@ -1,0 +1,134 @@
+@page "/addGroupMember"
+@using System.ComponentModel.DataAnnotations
+@using DAS.Models
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h1>Add Patient Group Member</h1>
+<EditForm Model="@newGroupMember" OnValidSubmit="@(CreateNewGroupMember)" FormName="PatientCreateGroupMemberForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
+
+
+    <div>
+        <label>First Name:</label>
+        <InputText @bind-Value="newGroupMember.FirstName" />
+        <ValidationMessage For="@(() =>newGroupMember.FirstName)" />
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <InputText @bind-Value="newGroupMember.LastName" />
+        <ValidationMessage For="@(() => newGroupMember.LastName)" />
+    </div>
+   
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+<div>
+    <h2>Patient Group</h2>
+    <PatientGroup />
+</div>
+
+
+@code {
+    private Patient newGroupMember = new Patient
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        ProfileId = -1,
+        InsuranceCompany = "Uninsured", // placeholder info but might be changed
+        InsurancePolicyNumber = "uninsured" // this is a string in case policy number has letters
+
+    };
+
+    private List<Patient> patients = [];
+
+    
+
+    private string? message;
+
+    private void HandleValidSubmit()
+    {
+
+        message = "New Group Member successfully created. Returning to Account";
+        @* await Task.Delay(4000); *@
+        @* NavigationManager.NavigateTo("/Dashboard"); *@
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Loading up the lists from the DB
+        await AppState.LoadListsAsync();
+        patients = AppState.Patients ;
+    }
+
+
+    //part of the setup
+    // OnAfterRenderAsync(bool firstRender) goes here
+    
+
+    private async Task CreateNewGroupMember()
+    {
+        //This is where we will get the Insurance info based on the logged user's id which will be the same as the patient's profileId
+        @* Patient groupOwner = new Patient
+        {
+            PatientId = -1, // unique id for every patient
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            ProfileId = -1, //Foreign key that ties patient to a profile
+            InsuranceCompany = string.Empty,
+            InsurancePolicyNumber = string.Empty // this is a string in case policy number has letters
+
+        }; *@
+
+        //This is hardcoded for albert wesker ProfileId 1
+        var groupOwner = patients.FirstOrDefault(p => p.ProfileId == 1 );
+        //This will check if the newGroupMember already is a patient in the user's patient group
+        var existingGroupMember = patients.FirstOrDefault(p => p.FirstName == newGroupMember.FirstName && p.LastName == newGroupMember.LastName && p.ProfileId == 1);
+        if (groupOwner != null && existingGroupMember == null)
+        {
+            Patient createdGroupMember = new Patient
+            {
+                FirstName = newGroupMember.FirstName,
+                LastName = newGroupMember.LastName,
+                ProfileId = groupOwner.ProfileId, // this will be the logged user's id
+                InsuranceCompany = groupOwner.InsuranceCompany, // this will be from the logged in user's profile
+                InsurancePolicyNumber = groupOwner.InsurancePolicyNumber // this is a string in case policy number has letters
+
+            };
+
+            var addNewGroupMemberToDb = await AppState.AddNewGroupMember(createdGroupMember);
+
+            //testing false condition
+            @* var addNewGroupMemberToDb = false; *@
+
+            if (addNewGroupMemberToDb == true)
+            {
+                // update the lists
+                @* await AppState.LoadListsAsync(); *@
+                patients.Add(createdGroupMember);
+                StateHasChanged();
+                @* await HandleValidSubmit(); *@
+                message = "New group member was created successfully.  Refresh to view results or return to dashboard";
+            }
+            else
+            {
+                message = "Something went wrong. Group Member Creation canceled";
+            }
+        }
+        else
+        {
+            message = "Something went wrong. Group Member Creation canceled.  Retry after logging in and ensure the person you are trying to add isn't already in the group.";        }
+        
+        }
+
+   
+} @* End of @Code block *@

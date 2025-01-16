@@ -1,0 +1,5 @@
+{
+  "dotnet.defaultSolution": "DAS.sln",
+  "appService.preDeployTask": "publish-release",
+  "appService.deploySubpath": "DAS/bin/Release/net9.0/publish"
+}
