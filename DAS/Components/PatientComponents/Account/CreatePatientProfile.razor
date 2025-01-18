@@ -1,0 +1,310 @@
+@page "/createAccount"
+@using System.ComponentModel.DataAnnotations
+@using DAS.Models
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h1>Sign Up</h1>
+
+<EditForm Model="@profile" OnValidSubmit="@(CreateNewPatientProfile)" FormName="CreatePatientAccountForm">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
+
+    <div>
+        <label>First Name:</label>
+        <InputText @bind-Value="profile.FirstName" disabled="@isFormDisabled" placeholder="ex: John" />
+        <ValidationMessage For="@(() => profile.FirstName)" />
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <InputText @bind-Value="profile.LastName" disabled="@isFormDisabled" placeholder="ex: Smith" />
+        <ValidationMessage For="@(() => profile.LastName)" />
+    </div>
+
+    <div>
+        <label>Telephone:</label>
+        <InputText @bind-Value="profile.Telephone" disabled="@isFormDisabled" placeholder="ex: 0123456789" />
+        <ValidationMessage For="@(() => profile.Telephone)" />
+    </div>
+
+    <div>
+        <label>Address:</label>
+        <InputText @bind-Value="profile.Address" disabled="@isFormDisabled" placeholder="ex: 111 East 222 West" />
+        <ValidationMessage For="@(() => profile.Address)" />
+    </div>
+    <div>
+        <label>City</label>
+        <InputText @bind-Value="profile.City" disabled="@isFormDisabled" placeholder="ex: Salt Lake City" />
+        <ValidationMessage For="@(() => profile.City)" />
+    </div>
+    <div>
+        <label>State:</label>
+        <InputText @bind-Value="profile.State" disabled="@isFormDisabled" placeholder="ex: Utah" />
+        <ValidationMessage For="@(() => profile.State)" />
+    </div>
+    <div>
+        <label>ZipCode:</label>
+        <InputText @bind-Value="profile.ZipCode" disabled="@isFormDisabled" placeholder="ex: 12345" />
+        <ValidationMessage For="@(() => profile.ZipCode)" />
+    </div>
+
+    <div>
+        <label>Insurance Company:</label>
+        <InputText @bind-Value="profile.InsuranceCompany" disabled="@isFormDisabled"
+            placeholder="ex: Red Cross Blue Shield" />
+        <ValidationMessage For="@(() => profile.InsuranceCompany)" />
+    </div>
+    <div>
+        <label>Insurance Policy:</label>
+        <InputText @bind-Value="profile.InsurancePolicyNumber" disabled="@isFormDisabled" placeholder="ex: 12345" />
+        <ValidationMessage For="@(() => profile.InsurancePolicyNumber)" />
+    </div>
+
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="profile.Email" disabled="@isFormDisabled" placeholder="ex: randomemail@email.com" />
+        <ValidationMessage For="@(() => profile.Email)" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="profile.Password" disabled="@isFormDisabled" />
+        <ValidationMessage For="@(() => profile.Password)" />
+    </div>
+
+
+
+    <button type="submit">Submit</button>
+
+
+</EditForm>
+@* <div>
+    <button @onclick=signOut>log out</button>
+</div> *@
+
+@code {
+
+    //This is a temporary class that inherits the Profile model structure and adds 2 more attributes
+    public class TemporaryExtentedProfile : Profile
+    {
+        //Due to that not all users might not have insurance this can be let blank
+        [RegularExpression(@"^[a-zA-Z\s]*$",
+        ErrorMessage = "Please enter the insurance company name that is no more than 40 letters total")]
+        [StringLength(40, MinimumLength = 0)]
+        public string InsuranceCompany { get; set; } = string.Empty;
+
+
+
+        //Due to that not all users might not have insurance this can be let blank
+        [RegularExpression(@"^[a-zA-Z0-9\s]*$",
+        ErrorMessage = "Please enter insurance policy number that is no more than 10 characters total")]
+        [StringLength(10, MinimumLength = 0)]
+        public string InsurancePolicyNumber { get; set; } = string.Empty;
+
+
+    }
+
+    //This will give the form structure
+    private TemporaryExtentedProfile profile = new TemporaryExtentedProfile
+        {
+            ProfileId = -1,
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Telephone = string.Empty,
+            Address = string.Empty,
+            City = string.Empty,
+            State = string.Empty,
+            ZipCode = string.Empty,
+            Email = string.Empty,
+            Password = string.Empty,
+            InsuranceCompany = string.Empty,
+            InsurancePolicyNumber = string.Empty
+
+
+
+        };
+
+
+
+
+    private string? message;
+
+    //Flag to disable the form when flipped to true
+    bool isFormDisabled = false;
+
+
+    private async Task HandleValidSubmit()
+    {
+
+        //set logged in user to newly created account
+        // make sure that the email and password of the created account are not empty or null
+        if (!string.IsNullOrEmpty(profile.Email) && !string.IsNullOrEmpty(profile.Password))
+        {
+            //This checks to see if this profile exists already based on the email and password
+            var existingProfile = await AppState.GetProfileByCreds(profile.Email, profile.Password);
+
+            //testing existingProfile conditional Note: must change conditional to check false
+            @* var existingProfilee = false; *@
+            @* if (existingProfilee == false) *@
+            @* if (existingProfilee != false) *@
+
+            if (existingProfile == null) // needs to equal null
+            {
+                message = "Profile created successfully but failed to sign-in. Please try signing later";
+                return;
+            }
+            else
+            {
+                //After making sure the newly created profile exists we will use the info to create the Profile owner as a patient
+                Patient newPatient = new Patient()
+                    {
+                        FirstName = existingProfile.FirstName,
+                        LastName = existingProfile.LastName,
+                        ProfileId = existingProfile.ProfileId, // this will be the logged user's id
+
+                    //These bottom 2 will be filled in from our form
+                        InsuranceCompany = profile.InsuranceCompany,
+                        InsurancePolicyNumber = profile.InsurancePolicyNumber
+
+                    };
+
+                var addedNewPatientSuccess = await AppState.AddNewGroupMember(newPatient);
+
+                //Testing addedNewPatientSuccess conditional
+                @* var addedNewPatientSuccess = false; *@
+                @* var addedNewPatientSuccess = true; *@
+
+                if (addedNewPatientSuccess == true)
+                {
+                    message = "Account created successfully and now logged in. Going to Dashboard.";
+
+                    // Below the commented out line is an idea fragment going to the localStorage to retrieve a valid profile's Id
+                    @* await JSRuntime.InvokeVoidAsync("setLocalStorageItem", "LoggedInUser", validProfile.ProfileId); *@
+
+                    await Task.Delay(5000);
+                    NavigationManager.NavigateTo("/dashboard");
+                }
+                else
+                {
+                    message = "Account created successfully but failed to sign-in. Please try signing in Login Screen";
+                }
+
+
+
+
+
+
+            }
+
+        }
+        else
+        {
+
+            message = "Account created successfully but failed to sign-in. Please try signing later";
+
+        }
+
+
+
+        //send user back the the home page but can be changed to send back to customer's dashboard
+        @* NavigationManager.NavigateTo("/"); *@
+
+    }
+
+    //this will go somewhere else but works
+    @* public async Task signOut()
+    {
+        await JSRuntime.InvokeVoidAsync("logOut");
+        Console.WriteLine("Log out successful");
+    } *@
+
+    @* protected override async Task OnInitializedAsync()
+    {
+
+
+
+    } *@
+
+    private async Task CreateNewPatientProfile()
+    {
+        message = "";
+        isFormDisabled = true;
+
+
+        // Implement creation logic here
+        //Creating a new profile and filling the info from the editform
+        Profile newProfile = new Profile()
+            {
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                Telephone = profile.Telephone,
+                Address = profile.Address,
+                City = profile.City,
+                State = profile.State,
+                ZipCode = profile.ZipCode,
+                Email = profile.Email,
+                Password = profile.Password,
+
+            };
+
+
+        @* await AppState.LoadListsAsync(); *@
+
+        bool duplicateEmailChecker = AppState.Profiles.Any(p => p.Email == newProfile.Email);
+
+        //testing the duplicateEmailchecker conditional
+        @* bool duplicateEmailChecker = true; *@
+
+
+        if (duplicateEmailChecker == true || newProfile.Email == null || newProfile.Password == null)
+        {
+            message = "Please use a valid and/or different email and a valid password";
+            isFormDisabled = false;
+            return;
+        }
+        else
+        {
+            var addProfileToDb = await AppState.AddNewProfileToDb(newProfile);
+
+            //testing the addProfileToDb conditional
+            @* var addProfileToDb = true; *@
+            @* var addProfileToDb = false; *@
+
+
+            if (addProfileToDb == true)
+            {
+                //updates AppState to reflect changes
+                StateHasChanged();
+                message = "Profile Creation Successful";
+
+                //Testing to allow time to verify message works
+                @* await Task.Delay(5000); *@
+
+
+
+
+                await HandleValidSubmit();
+
+            }
+            else
+            {
+                //error message will be displayed
+                message = "Something went wrong. Profile Creation Canceled.";
+                isFormDisabled = false;
+
+            }
+
+        }
+
+
+
+    }
+
+
+}

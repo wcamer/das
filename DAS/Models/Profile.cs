@@ -6,7 +6,7 @@ namespace DAS.Models;
 public class Profile
 {
 
-    public required int ProfileId { get; set; }
+    public int ProfileId { get; set; }
 
     [RegularExpression(@"^[a-zA-z]*$",
     ErrorMessage = "First name must be at least 2 letters but no more than 20 letters long")]

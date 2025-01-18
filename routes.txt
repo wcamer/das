@@ -1,0 +1,23 @@
+This is a page to help keep track of what the existing routes are
+
+/dashboard
+    This is a landing page where a logged in user will go after successfully being logged in
+
+/editProfile
+    This is a landing page where a logged in, profile owning patient can edit their profile or delete it
+
+/createAppointment
+    landing page for a logged in patient can schedule an appointment for their self or anyone in their group (patients that are linked to their profile)
+
+ /edit-appointment/{id:int}
+    Note: This route takes in an variable called "id" which represents the target appointment's id number to ensure it is unique
+    This is a landing page where a logged in patient can update or delete an appointment.  The patient can reassign the appointment to another patient in their patient group, edit the time, change the date, or delete the appointment
+
+/addGroupMember
+    Landing page for a logged in patient to create new patients that will be connected to their profile
+
+
+/edit-patient/{patientId:int}
+    Note: This route takes in a variable called "patientId" which represents the targets patientId which will be used to retrieve their specific data to be edited or deleted
+    Landing page for a logged in patient to edit other existing patients connected to their profile
+    

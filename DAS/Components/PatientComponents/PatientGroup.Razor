@@ -1,8 +1,8 @@
-@* @using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
-@inject AppState AppState
+
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer *@
+@rendermode InteractiveServer
 @inject AppState AppState
 @using DAS.Models
 
@@ -29,9 +29,12 @@
             {
                 @foreach(var p in patientGroupList)
                 {
-                    @* hardcode test for Albert Wesker. profileID 3 patient ID 5 *@
-                    @if (p.ProfileId == 1 || p.PatientId == 1)
+                    @* hardcode test for Albert Wesker profileid  1 and patiend id 1
+                    . another acceptable hardcode test is Cloud strife profileID 3 patient ID 5 *@
+                    @if (p.ProfileId == userId )
                     {
+                         Console.WriteLine($"****************************** {p.FirstName} {p.LastName} {p.PatientId} profileid = {p.ProfileId}");
+
                         var patientEditRoute = $"/edit-patient/{p.PatientId}";
                         var patientDetailsRoute = $"/patient-details/{p.PatientId}";
                          <tr>
@@ -79,11 +82,20 @@
 @code{
 
     private List<Patient> patientGroupList = [];
+    private int userId;
 
     protected override async Task OnInitializedAsync()
     {
         await AppState.LoadListsAsync();
         patientGroupList = AppState.Patients;
+
+        //Hardcoded for Albert Wesker ProfileId 1
+        //Another acceptable test user is Cloud Strife ProfileId 3
+        userId = 1;
+
+        //For disposible user keep it numbers above 4 and ensure they already exist
+        //userId = 8;
+
     }
 
 }

@@ -19,7 +19,7 @@ namespace DAS.Data
         public DbSet<DAS.Models.Patient> Patients { get; set; } = default!;
         public DbSet<DAS.Models.Profile> Profiles { get; set; } = default!;
 
-        public DbSet<DAS.Models.DoctorNote> DoctorNotes { get; set; } = default!;
+        public DbSet<DAS.Models.DoctorNote> DoctorNote { get; set; } = default!;
         public DbSet<DAS.Models.ServiceProviders> ServiceProviders { get; set; } = default!;
 
 

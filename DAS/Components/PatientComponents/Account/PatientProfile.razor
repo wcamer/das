@@ -1,0 +1,100 @@
+@using DAS.Models
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<div>
+    <h2>Account Information</h2>
+    <div>
+        <div>
+            <span>Name: @(profile.FirstName + " " + profile.LastName)</span>
+        </div>
+
+        <div>
+            <span>Telephone: @profile.Telephone</span>
+        </div>
+
+
+        <div>
+            <span>Insurance: @profile.InsuranceCompany</span>
+        </div>
+
+        <div>
+            <span>Policy: @profile.InsurancePolicyNumber</span>
+        </div>
+
+    </div>
+</div>
+
+@code
+{
+
+    public class TemporaryExtentedProfile : Profile
+    {
+        public string? InsuranceCompany { get; set; } = string.Empty;
+        public string? InsurancePolicyNumber { get; set; } = string.Empty;
+
+    }
+
+    private TemporaryExtentedProfile profile = new TemporaryExtentedProfile
+        {
+
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Telephone = string.Empty,
+            Address = string.Empty,
+            City = string.Empty,
+            State = string.Empty,
+            ZipCode = string.Empty,
+            Email = string.Empty,
+            Password = string.Empty,
+            InsuranceCompany = string.Empty,
+            InsurancePolicyNumber = string.Empty
+
+
+
+        };
+
+    private int userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AppState.LoadListsAsync();
+
+        //hardcoded test user Albert Wesker ProfileId 1
+        //Another acceptable test user Cloud Strife profileID 3
+        userId = 1;
+
+        //Note: Change this to a disposable profile above 5 (if it exists already)
+        //userId = 8;
+
+        //This will be used to get the user's profile based on their profileId provided to the userId variable
+        var userProfileData = await AppState.GetProfileById(userId);
+        //This will make sure the user's profile is found
+        if (userProfileData != null)
+        {
+            //using the found profile data we will now get the user's patient data to extract the insurance data
+            var userPatientData = await AppState.GetPatientByName(userProfileData.FirstName, userProfileData.LastName, userId);
+            if (userPatientData != null)
+            {
+                profile.FirstName = userProfileData.FirstName;
+                profile.LastName = userProfileData.LastName;
+                profile.Telephone = userProfileData.Telephone;
+                profile.Address = userProfileData.Address;
+                profile.City = userProfileData.City;
+                profile.State = userProfileData.State;
+                profile.ZipCode = userProfileData.ZipCode;
+                profile.Email = userProfileData.Email;
+                profile.InsuranceCompany = userPatientData.InsuranceCompany;
+                profile.InsurancePolicyNumber = userPatientData.InsurancePolicyNumber;
+            }
+        }
+
+
+
+
+
+
+
+    }
+
+}@* end of @code block *@

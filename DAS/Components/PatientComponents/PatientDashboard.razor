@@ -1,44 +1,47 @@
 @using DAS.Components.PatientComponents.Appointment
+@using DAS.Components.PatientComponents.Account
+@using DAS.Components.PatientComponents
 
 <PageTitle>Patient Dashboard</PageTitle>
 
 <h2>Patient Dashboard</h2>
 
 <div>
+    <PatientProfile />
+     @* 
+    example of the component contents
     <h2>Account Information</h2>
     <div>
         <div>
-            <span>Name:</span> <span>Cloud Strife</span>
-        </div>
-        
-        
-        <div>
-            <span>Insurance:</span> <span>Shinra Power Co.</span>
+            <span>Name: Albert Wesker </span>
         </div>
 
         <div>
-            
-            <span>Policy:</span> <span>77777</span>
+            <span>Telephone: 1234567890</span>
         </div>
-        @* <div>
-            <p>Insurance:</p>
-            <p>Shinra Power Co</p>
-            <p>Policy:</p>
-            <p>77777</p>
-        </div> *@
-    </div>
+
+
+        <div>
+            <span>Insurance: Umbrella Co. </span>
+        </div>
+
+        <div>
+            <span>Policy: 12345</span>
+        </div>
+
+    </div> *@
 </div>
 
 <div>
     <h2>Options</h2>
 
     <div class="nav-item px-3">
-        <NavLink class="nav-link" href="/editAccount">
+        <NavLink class="nav-link" href="/editProfile">
             <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit Account
         </NavLink>
     </div>
     <div class="nav-item px-3">
-        <NavLink class="nav-link" href="/appointment">
+        <NavLink class="nav-link" href="/createAppointment">
             <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add Appointment
         </NavLink>
     </div>
