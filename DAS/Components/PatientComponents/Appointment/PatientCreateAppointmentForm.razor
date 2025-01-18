@@ -8,68 +8,69 @@
 
 <h1>Create Appointment</h1>
 
-@* @if(AppState.User.UserId < 1 )
+@if(userId < 1 )
 {
     <div>
         <p>Please log in to make an appointment.  Thank You!</p>
     </div>
 }
 else
-{ *@
+{
 
-<EditForm Model="@newAppointment" OnValidSubmit="@(CreatePatientAppointment)" FormName="PatientCreateAppointmentForm">
+    <EditForm Model="@newAppointment" OnValidSubmit="@(CreatePatientAppointment)" FormName="PatientCreateAppointmentForm">
 
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert alert-info">@message</div>
-    }
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
 
-    @* <div>
-        <label>Name:</label>
-        <InputText @bind-Value="exAppoint.Appointment.Name"  />
-        <ValidationMessage For="@(() => appointment.Name)" />
-    </div> *@
+        @* <div>
+            <label>Name:</label>
+            <InputText @bind-Value="exAppoint.Appointment.Name"  />
+            <ValidationMessage For="@(() => appointment.Name)" />
+        </div> *@
 
-    <div>
-        <label>Date:</label>
-        <InputDate @bind-Value="newAppointment.Date" />
-        <ValidationMessage For="@(() => newAppointment.Date)" />
-    </div>
+        <div>
+            <label>Date:</label>
+            <InputDate @bind-Value="newAppointment.Date" />
+            <ValidationMessage For="@(() => newAppointment.Date)" />
+        </div>
 
-    <div>
-        <label>Time:</label>
-        <InputText @bind-Value="newAppointment.Time" />
-        <ValidationMessage For="@(() => newAppointment.Time)" />
-    </div>
-    <div>
-        <label>Name:</label>
-        <InputSelect @bind-Value="newAppointment.PatientId">
-        @* <InputSelect> *@
-            <option value=""> Select A Patient </option>
-            @foreach (var p in patients)
-            {
-                @* This is hardcoded for Albert Wesker profileid 1 and patient id 1 *@
-                @if(p.ProfileId == 1 || p.PatientId == 1)
+        <div>
+            <label>Time:</label>
+            <InputText @bind-Value="newAppointment.Time" />
+            <ValidationMessage For="@(() => newAppointment.Time)" />
+        </div>
+        <div>
+            <label>Name:</label>
+            <InputSelect @bind-Value="newAppointment.PatientId">
+            @* <InputSelect> *@
+                <option value=""> Select A Patient </option>
+                @foreach (var p in patients)
                 {
-                    @* <option value="@p.PatientId">@p.FirstName @p.LastName</option> *@
-                    <option value="@p.PatientId">@p.FirstName @p.LastName</option>
+                    @* This is hardcoded for Albert Wesker profileid 1 and patient id 1 *@
+                    @* @if(p.ProfileId == 1 || p.PatientId == 1) *@
+                    @if(p.ProfileId == userId)
+                    {
+                        @* <option value="@p.PatientId">@p.FirstName @p.LastName</option> *@
+                        <option value="@p.PatientId">@p.FirstName @p.LastName</option>
 
-                }
-                
-            } 
-        </InputSelect>
-        <ValidationMessage For="@(() => newAppointment.PatientId)" />
-    </div>
-
- 
-
-    <button type="submit" >Submit</button>
+                    }
+                    
+                } 
+            </InputSelect>
+            <ValidationMessage For="@(() => newAppointment.PatientId)" />
+        </div>
 
     
-</EditForm>
 
+        <button type="submit" >Submit</button>
+
+        
+    </EditForm>
+}
 
 @code {
 
@@ -90,11 +91,19 @@ else
     // This will contain a specific message that will be shown
     private string? message;
 
+    private int userId;
+
     protected override async Task OnInitializedAsync()
     {
         //Loading up the lists from the DB
         await AppState.LoadListsAsync();
         patients = AppState.Patients ;
+
+        //hardcoded for testing for user Albert Wesker profileId 1
+        userId = 1;
+
+        //Note change this to a dispoable Profile (any profileId above 5)
+        //userId = 8;
     }
 
      
@@ -127,8 +136,7 @@ else
 
         // Implement creation logic here
 
-        //hardcoded example for albert wesker profileid NOTE: this will be changed
-        newAppointment.AppointSetterId = 1;
+        newAppointment.AppointSetterId = userId;
 
         
         // This will get a Patient object and assign to selectedPatient
