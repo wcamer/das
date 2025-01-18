@@ -103,8 +103,12 @@
         await AppState.LoadListsAsync();
         patients = AppState.Patients ;
 
-        //note this is hardcoded for albert wesker
+        //note this is hardcoded for albert wesker profile id 1 patientid 1
+        //another hardcoded user could be Cloud Strife profile id 3 patient id 5
         userId = 1;
+
+        //Note: Chagne this to a disposable profile when deleting, any number after 4 (if it exists)
+        //userId = 8;
 
         var foundPatient = await AppState.GetPatientById(patientId , userId);
         if(foundPatient != null)
