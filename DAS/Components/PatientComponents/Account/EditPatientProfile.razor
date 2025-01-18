@@ -1,0 +1,367 @@
+@page "/editProfile"
+@using System.ComponentModel.DataAnnotations
+@using DAS.Models
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<h1>Edit Profile Information</h1>
+
+
+@if(tEProfileWasLoaded != true)
+{
+    <p>Something went wrong. Try logging in and try again</p>
+
+}
+else
+{
+    <EditForm Model="@profile"  FormName="EditPatientProfileForm">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+        @if (deleteWarningFlag == true)
+        {
+            <div>
+                <button @onclick="ProcessDeletePatientProfile" disabled="@isFormDisabled">Yes</button>
+                <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+            </div>
+        }
+
+
+        <div>
+            <label>First Name:</label>
+            <InputText @bind-Value="profile.FirstName" disabled="@deleteWarningFlag" placeholder="ex: John" />
+            <ValidationMessage For="@(() => profile.FirstName)" />
+        </div>
+        <div>
+            <label>Last Name:</label>
+            <InputText @bind-Value="profile.LastName" disabled="@deleteWarningFlag" placeholder="ex: Smith" />
+            <ValidationMessage For="@(() => profile.LastName)" />
+        </div>
+
+        <div>
+            <label>Telephone:</label>
+            <InputText @bind-Value="profile.Telephone" disabled="@deleteWarningFlag" placeholder="ex: 0123456789" />
+            <ValidationMessage For="@(() => profile.Telephone)" />
+        </div>
+
+        <div>
+            <label>Address:</label>
+            <InputText @bind-Value="profile.Address" disabled="@deleteWarningFlag" placeholder="ex: 111 East 222 West" />
+            <ValidationMessage For="@(() => profile.Address)" />
+        </div>
+        <div>
+            <label>City</label>
+            <InputText @bind-Value="profile.City" disabled="@deleteWarningFlag" placeholder="ex: Salt Lake City" />
+            <ValidationMessage For="@(() => profile.City)" />
+        </div>
+        <div>
+            <label>State:</label>
+            <InputText @bind-Value="profile.State" disabled="@deleteWarningFlag" placeholder="ex: Utah" />
+            <ValidationMessage For="@(() => profile.State)" />
+        </div>
+        <div>
+            <label>ZipCode:</label>
+            <InputText @bind-Value="profile.ZipCode" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
+            <ValidationMessage For="@(() => profile.ZipCode)" />
+        </div>
+
+        <div>
+            <label>Insurance Company:</label>
+            <InputText @bind-Value="profile.InsuranceCompany" disabled="@deleteWarningFlag"
+                placeholder="ex: Red Cross Blue Shield" />
+            <ValidationMessage For="@(() => profile.InsuranceCompany)" />
+        </div>
+        <div>
+            <label>Insurance Policy:</label>
+            <InputText @bind-Value="profile.InsurancePolicyNumber" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
+            <ValidationMessage For="@(() => profile.InsurancePolicyNumber)" />
+        </div>
+
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="profile.Email" disabled />
+            
+        </div>
+
+        @* <div>
+            <label>Password:</label>
+            <InputText @bind-Value="profile.Password" disabled="@isFormDisabled" />
+            <ValidationMessage For="@(() => profile.Password)" />
+        </div> *@
+
+
+    <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
+    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
+
+
+    </EditForm>
+    @* <div>
+        <button @onclick=signOut>log out</button>
+    </div> *@
+}
+
+@code {
+
+    //This is a temporary class that inherits the Profile model structure and adds 2 more attributes
+    public class TemporaryExtentedProfile : Profile
+    {
+        //Due to that not all users might not have insurance this can be let blank
+        [RegularExpression(@"^[a-zA-Z\s]*$",
+        ErrorMessage = "Please enter the insurance company name that is no more than 40 letters total")]
+        [StringLength(40, MinimumLength = 0)]
+        public string InsuranceCompany { get; set; } = string.Empty;
+
+
+
+        //Due to that not all users might not have insurance this can be let blank
+        [RegularExpression(@"^[a-zA-Z0-9\s]*$",
+        ErrorMessage = "Please enter insurance policy number that is no more than 10 characters total")]
+        [StringLength(10, MinimumLength = 0)]
+        public string InsurancePolicyNumber { get; set; } = string.Empty;
+
+
+    }
+
+    //This will give the form structure
+    private TemporaryExtentedProfile profile = new TemporaryExtentedProfile
+        {
+            ProfileId = -1,
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Telephone = string.Empty,
+            Address = string.Empty,
+            City = string.Empty,
+            State = string.Empty,
+            ZipCode = string.Empty,
+            Email = string.Empty,
+            Password = string.Empty,
+            InsuranceCompany = string.Empty,
+            InsurancePolicyNumber = string.Empty
+
+
+
+        };
+
+
+
+
+
+    private string? message;
+
+    //Flag to disable the form when flipped to true
+    bool isFormDisabled = false;
+    bool deleteWarningFlag = false;
+    bool tEProfileWasLoaded;
+    private string deleteWarningMessage = $"WARNING: This will permanently erase all data for the following: your profile, patients connected to your profile, all non-completed/canceled appointments, and doctor's notes. Are you sure you want to delete your profile? (If you click yes, this will permanently delete all aforementioned items. )";
+
+
+    private int userId; 
+
+    private List<Profile> profileList = [];
+    private List<Patient> patientList = [];
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //This is needed for when we need to check the lists in the State file for an existing profile
+        await AppState.LoadListsAsync();
+        profileList = AppState.Profiles;
+        patientList = AppState.Patients;
+
+        //This is hardcoded for albert wesker to edit
+        userId =  1;
+        
+        //Note: Change this to any disposable user that exists after 4
+        //userId = 8;
+
+        try
+        {
+            var foundProfile = await AppState.GetProfileById(userId);
+            if(foundProfile != null)
+            {
+                var foundPatient = await AppState.GetPatientByName(foundProfile.FirstName, foundProfile.LastName , userId);
+
+                if(foundPatient != null)
+                {
+                    profile.ProfileId = foundProfile.ProfileId;
+                    profile.FirstName = foundProfile.FirstName;
+                    profile.LastName = foundProfile.LastName;
+                    profile.Telephone = foundProfile.Telephone;
+                    profile.Address = foundProfile.Address;
+                    profile.City = foundProfile.City;
+                    profile.State = foundProfile.State;
+                    profile.ZipCode = foundProfile.ZipCode;
+                    profile.Email = foundProfile.Email;
+                    profile.Password = foundProfile.Password;
+                    profile.InsuranceCompany = foundPatient.InsuranceCompany;
+                    profile.InsurancePolicyNumber = foundPatient.InsurancePolicyNumber;
+
+                    tEProfileWasLoaded = true;
+                }
+                else
+                {
+                    tEProfileWasLoaded = false;
+                }
+            }
+            else
+            {
+                tEProfileWasLoaded = false;
+            }
+        
+        
+        }
+        catch 
+        {
+            tEProfileWasLoaded = false;
+        }
+        
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        await SubmitEditedPatientProfile(profile);
+
+
+    }
+
+    //this will go somewhere else but works
+    @* public async Task signOut()
+    {
+        await JSRuntime.InvokeVoidAsync("logOut");
+        Console.WriteLine("Log out successful");
+    } *@
+
+    @* protected override async Task OnInitializedAsync()
+    {
+
+
+
+    } *@
+
+    private async Task SubmitEditedPatientProfile(TemporaryExtentedProfile tEProfile)
+    {
+        message = "";
+        isFormDisabled = true;
+
+        //get existing profile
+        var selectedProfile = profileList.FirstOrDefault(p => p.ProfileId == tEProfile.ProfileId);
+       
+        
+        
+        if(selectedProfile != null )
+        {
+            //get existing patient
+            //Further Context: this is grabing a patient by filtering the options down via the ProfileId foreign key
+            //Then we will select the the patient that matches the name of the Profile owner
+            var selectedPatient =  patientList.FirstOrDefault(p => p.ProfileId == tEProfile.ProfileId && p.FirstName == selectedProfile.FirstName && p.LastName == selectedProfile.LastName );
+            if(selectedPatient != null)
+            {
+                //We need to split up the tEProfile that has been edited and avoid having to create another model
+                Profile editedProfile = new Profile()
+                {
+                    FirstName = tEProfile.FirstName,
+                    LastName = tEProfile.LastName,
+                    Telephone = tEProfile.Telephone,
+                    Address = tEProfile.Address,
+                    City = tEProfile.City,
+                    State = tEProfile.State,
+                    ZipCode = tEProfile.ZipCode,
+                    Email = tEProfile.Email,
+                    Password = tEProfile.Password,
+
+                };
+
+                //If there are any changes to the name and insurance information it will be contained in here and passed on
+                Patient editedPatient = new Patient()
+                {
+                    FirstName = tEProfile.FirstName,
+                    LastName = tEProfile.LastName,
+                    InsuranceCompany = tEProfile.InsuranceCompany,
+                    InsurancePolicyNumber = tEProfile.InsurancePolicyNumber
+                };
+                try
+                {
+                    var editedProfileToDb = await AppState.EditPatientProfile(selectedProfile.ProfileId, userId, editedProfile);
+                    var editedPatientToDb = await AppState.EditPatient(selectedPatient.PatientId, userId, editedPatient);
+                    if(editedProfileToDb == true && editedPatientToDb == true)
+                    {
+                        //update AppState
+                        StateHasChanged();
+                        message = "Profile has been updated.  Note: Your insurance information was updated if you changed it but, the other patients in your patient group will still retain their insurance info but can be edited in the patient specific edit page.";
+
+
+                    }
+                    else
+                    {
+                        message = "Something went wrong updating the profile and your corrosponding patient info.  Please try later.";
+                    }
+
+                }
+                catch
+                {
+                    message ="Something went wrong please try later.";
+                }
+            }
+            else
+            {
+                message = "Something went wrong when find associated patient info.  Please try at a different time";
+            }
+
+            
+
+        }
+        else
+        {
+            message ="Something went wrong with trying to find profile.  Please try later";
+        }
+        isFormDisabled = false;
+
+        
+
+
+
+    } //end of SubmitEditedPaitentProfile
+
+    private async Task ProcessDeletePatientProfile()
+    {
+        var profileDeletionCompleted = await AppState.DeletePatientProfile(profile.ProfileId);
+        @* deleteWarningFlag = false; *@
+
+        // test if the deletion succeeded
+        @* var profileDeletionCompleted = true; *@
+
+        //test if the deletion failed
+        @* var profileDeletionCompleted = false; *@
+
+       if (profileDeletionCompleted == true)
+       {
+            message = "Delection Completed.  Returning to Home Page";
+            isFormDisabled = true;
+            await Task.Delay(5000);
+            //This is for testing to see if the navigation will redirect after it is completed
+            //This worked
+            NavigationManager.NavigateTo("/");
+       }
+       else
+       {
+            message = "Something went wrong.  Please try again at a later time.  Deletion Operation canceled";
+            deleteWarningFlag = false;
+       }
+    }// end of ProcessDeletePatientProfile function
+
+//johonny patientid 16 profileid 8
+
+//jimm zzz patientId 18 profile id 8
+
+
+
+
+
+}@*  end of @code block *@
