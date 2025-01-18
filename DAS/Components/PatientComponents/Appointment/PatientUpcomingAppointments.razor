@@ -34,7 +34,9 @@
             {
                 @foreach (var appointment in appointments)
                 {
-                    @if (appointment.PatientId == 1 || appointment.AppointSetterId == 1 && appointment.Status == "Pending")
+                    //Hardcoded example for albert wesker patientid 1 profileid 1
+                    //another acceptable hardcoded example for testing is Cloud Strife patient id 5 profileid 3
+                    @if (appointment.AppointSetterId == userId && appointment.Status == "Pending")
                     {
                         var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
 
@@ -98,6 +100,7 @@
 @code {
 
     private List<Appointment> appointments = [];
+    private int userId;
 
 
 
@@ -120,7 +123,12 @@
         //Copies the the data in the Appointments in the state file to the local variable
         appointments = AppState.OrderedAppointments;
 
+        //hardcoded for testing for user Albert Wesker profileId 1 patientId 1
+        //another accepted test user is Cloud Strife profileId 3 patientId 5
+        userId = 1;
 
+        //Note change this to a dispoable Profile (any profileId above 5)
+        //userId = 8;
 
 
 

@@ -10,7 +10,7 @@
 
 
 <h1>Edit Appointment</h1> 
-<EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@isFormDisabled"> 
+<EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@deleteWarningFlag"> 
     <DataAnnotationsValidator />
     <ValidationSummary />
     @if (!string.IsNullOrEmpty(message))
@@ -27,13 +27,13 @@
 
     <div>
         <label>Date:</label>
-        <InputDate @bind-value="appointment.Date" disabled="@isFormDisabled" />
+        <InputDate @bind-value="appointment.Date" disabled="@deleteWarningFlag" />
         <ValidationMessage For="@(() => appointment.Date)" />
     </div>
 
     <div>
         <label>Time:</label>
-        <input @bind-value="appointment.Time" disabled="@isFormDisabled" />
+        <input @bind-value="appointment.Time" disabled="@deleteWarningFlag" />
         <ValidationMessage For="@(() => appointment.Time)" />
     </div>
 
@@ -44,11 +44,14 @@
 
     <div>
         <label>Name:</label>
-        <InputSelect @bind-Value="appointment.PatientId" disabled="@isFormDisabled">
+        <InputSelect @bind-Value="appointment.PatientId" disabled="@deleteWarningFlag">
             <option value="">Select A Patient</option>
             @foreach (var p in patients)
             {
-                @if (p.ProfileId == 1 || p.PatientId == 1)
+                //hardcoded example for Albert Wesker profileid 1 patientId 1
+                //another acceptable test user is Cloud Strife profileid 3 patientId 5
+                @* @if (p.ProfileId == 1 || p.PatientId == 1) *@
+                @if(p.ProfileId == userId)
                 {
                     <option value="@p.PatientId">@p.FirstName @p.LastName</option>
                 }
@@ -57,8 +60,8 @@
         <ValidationMessage For="@(() => appointment.PatientId)" />
     </div>
 
-    <button type="submit" @onclick="HandleValidSubmit" disabled="@isFormDisabled">Submit</button>
-    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@isFormDisabled">Delete</button>
+    <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
+    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
 </EditForm>
 
 
@@ -83,6 +86,8 @@
     
     //This is a flag to disable the form if the appointment is deleted
     bool isFormDisabled = false;
+    
+
 
     string? targetPatient;
     private List<Patient> patients = [];
@@ -112,8 +117,10 @@
         await AppState.LoadListsAsync();
         patients = AppState.Patients ;
 
-        //note this is hardcoded for albert wesker
+        //note this is hardcoded for albert wesker profileid 1
         userId = 1;
+        //note another hardcoded example can be Cloud Strife profileid 3
+        //userId = 8;
 
         var foundAppointment = await AppState.GetAppointmentById(id , userId);
         if(foundAppointment != null)
