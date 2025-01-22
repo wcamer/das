@@ -1,0 +1,31 @@
+@using DAS.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<h3>Patient List</h3>
+<p>
+    Please note that this list exists only to help you login with a known account,
+    this will not be in the final production
+</p>
+<ul>
+    @if (profiles != null)
+    {
+        foreach(var patient in profiles)
+        {
+            <li>Email:@patient.Email   password:@patient.Password</li>
+        }
+    }
+</ul>
+
+@code
+{
+    private List<Profile> profiles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch data from the database
+        await AppState.LoadListsAsync();
+        profiles = AppState.Profiles;
+    }
+}
