@@ -1,0 +1,88 @@
+@page "/login"
+@inject AuthService AuthService
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+
+
+<EditForm Model="loginModel" OnValidSubmit="@(Authenticate)" FormName="PatientLoginForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <p>@errorMessage</p>
+        <p>@message</p>
+    </div>
+
+    <label>Email</label>
+    <InputText @bind-Value="loginModel.Email" disabled=@isFormDisabled Placeholder="Email" />
+    <label>Password</label>
+    <InputText @bind-Value="loginModel.Password" disabled=@isFormDisabled Placeholder="Password" type="password" />
+
+
+    <button type="submit">Login</button>
+</EditForm>
+
+
+
+@code {
+    public class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    };
+    private LoginModel loginModel = new LoginModel();
+
+
+
+
+    private string? errorMessage;
+    private string? message;
+
+    private bool isFormDisabled = false;
+
+    private async Task Authenticate()
+    {
+        //Disable the login form while attempting to login
+        isFormDisabled = true;
+
+        //Clear out any logged in user
+        await UserService.DeleteLoggedInUser();
+
+
+        message = "Attempting to login...";
+        errorMessage = "";
+        StateHasChanged();
+        //simulated delay to give time for message to be read
+        await Task.Delay(5000);
+
+
+        var User = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+        if (User != null)
+        {
+
+
+            await UserService.SetLoggedInUser(User);
+
+            message = "Login Successful! Directing to dashboard";
+            errorMessage = "";
+            StateHasChanged();
+
+            //This is just for demo purposes to show that the login was successful
+            await Task.Delay(3000);
+            NavigationManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            //reset message variable
+            message = "";
+            //re-enable the login form to try again
+            isFormDisabled = false;
+            @* Console.WriteLine($"*****************UserService.CurrentUser.userid:{UserService.CurrentUser}"); *@
+
+            errorMessage = "Login failed. Please check credentials and try again";
+        }
+    }
+
+}
