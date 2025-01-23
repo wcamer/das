@@ -20,4 +20,6 @@ This is a page to help keep track of what the existing routes are
 /edit-patient/{patientId:int}
     Note: This route takes in a variable called "patientId" which represents the targets patientId which will be used to retrieve their specific data to be edited or deleted
     Landing page for a logged in patient to edit other existing patients connected to their profile
-    
+
+/login
+    Landing page where a user will put in their email and password to gain access to the app
