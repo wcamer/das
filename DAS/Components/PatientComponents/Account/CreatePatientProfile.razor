@@ -1,9 +1,11 @@
 @page "/createAccount"
 @using System.ComponentModel.DataAnnotations
 @using DAS.Models
+@using Microsoft.AspNetCore.Identity
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IPasswordHasher<Profile> PasswordHasher
 @rendermode InteractiveServer
 
 <h1>Sign Up</h1>
@@ -66,6 +68,7 @@
         <InputText @bind-Value="profile.InsurancePolicyNumber" disabled="@isFormDisabled" placeholder="ex: 12345" />
         <ValidationMessage For="@(() => profile.InsurancePolicyNumber)" />
     </div>
+  
 
     <div>
         <label>Email:</label>
@@ -138,6 +141,33 @@
     //Flag to disable the form when flipped to true
     bool isFormDisabled = false;
 
+    private async Task Authenticate()
+    {
+        if(profile.Email != null && profile.Password != null)
+        {
+            var User = await AuthService.LoginAsync(profile.Email, profile.Password);
+            if (User != null)
+            {
+                @* UserService.CurrentUser = User; *@
+                await UserService.SetLoggedInUser(User);
+                message = "Profile created successfully and redirecting to Patient Dashboard";
+                StateHasChanged();
+                await Task.Delay(5000);
+                NavigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                message = "Profile and profile owner's patient info was created successfully but login failed.  Unable to authenticate creditentials, please try logging in the login page.";
+            }
+        }
+        else
+        {
+            message = "Profile and profile owner's patient info was created successfully but login failed.  Password and or email are null.  Please try logging in in the login page";
+        }
+
+        
+    }
+
 
     private async Task HandleValidSubmit()
     {
@@ -146,8 +176,10 @@
         // make sure that the email and password of the created account are not empty or null
         if (!string.IsNullOrEmpty(profile.Email) && !string.IsNullOrEmpty(profile.Password))
         {
+            Console.WriteLine($">>>>>>>>>>>>>>>>>>> email:{profile.Email} password:{profile.Password} ");
+
             //This checks to see if this profile exists already based on the email and password
-            var existingProfile = await AppState.GetProfileByCreds(profile.Email, profile.Password);
+            var existingProfile = await AppState.GetProfileByCreds(profile, profile.Email, profile.Password);
 
             //testing existingProfile conditional Note: must change conditional to check false
             @* var existingProfilee = false; *@
@@ -182,17 +214,23 @@
 
                 if (addedNewPatientSuccess == true)
                 {
-                    message = "Account created successfully and now logged in. Going to Dashboard.";
+                    message = "Profile created successfully and profile owner created successfully. Attempting to login...";
+                    StateHasChanged();
 
                     // Below the commented out line is an idea fragment going to the localStorage to retrieve a valid profile's Id
                     @* await JSRuntime.InvokeVoidAsync("setLocalStorageItem", "LoggedInUser", validProfile.ProfileId); *@
-
+                    isFormDisabled = true;
                     await Task.Delay(5000);
-                    NavigationManager.NavigateTo("/dashboard");
+                    
+                    //Now we will try to log in the newly created profile
+                    await  Authenticate();
+
+                    
                 }
                 else
                 {
                     message = "Account created successfully but failed to sign-in. Please try signing in Login Screen";
+                    StateHasChanged();
                 }
 
 
@@ -236,11 +274,17 @@
         message = "";
         isFormDisabled = true;
 
-
         // Implement creation logic here
-        //Creating a new profile and filling the info from the editform
-        Profile newProfile = new Profile()
+        
+        //Making sure there was a password put in
+        if(profile.Password != null && profile.Email != null)
+        {
+            //This will hash the given password and will be used to save it in the database
+            var hashedPassword = PasswordHasher.HashPassword(profile, profile.Password);
+
+            Profile newProfile = new Profile()
             {
+                Type = "Patient",
                 FirstName = profile.FirstName,
                 LastName = profile.LastName,
                 Telephone = profile.Telephone,
@@ -249,60 +293,68 @@
                 State = profile.State,
                 ZipCode = profile.ZipCode,
                 Email = profile.Email,
-                Password = profile.Password,
+                Password = hashedPassword
 
             };
+       
+
+        
+
+       
+            @* await AppState.LoadListsAsync(); *@
+
+            bool duplicateEmailChecker = AppState.Profiles.Any(p => p.Email == newProfile.Email);
+
+            //testing the duplicateEmailchecker conditional
+            @* bool duplicateEmailChecker = true; *@
 
 
-        @* await AppState.LoadListsAsync(); *@
-
-        bool duplicateEmailChecker = AppState.Profiles.Any(p => p.Email == newProfile.Email);
-
-        //testing the duplicateEmailchecker conditional
-        @* bool duplicateEmailChecker = true; *@
-
-
-        if (duplicateEmailChecker == true || newProfile.Email == null || newProfile.Password == null)
-        {
-            message = "Please use a valid and/or different email and a valid password";
-            isFormDisabled = false;
-            return;
-        }
-        else
-        {
-            var addProfileToDb = await AppState.AddNewProfileToDb(newProfile);
-
-            //testing the addProfileToDb conditional
-            @* var addProfileToDb = true; *@
-            @* var addProfileToDb = false; *@
-
-
-            if (addProfileToDb == true)
+            if (duplicateEmailChecker == true || newProfile.Email == null || newProfile.Password == null)
             {
-                //updates AppState to reflect changes
-                StateHasChanged();
-                message = "Profile Creation Successful";
-
-                //Testing to allow time to verify message works
-                @* await Task.Delay(5000); *@
-
-
-
-
-                await HandleValidSubmit();
-
+                message = "Please use a valid and/or different email and a valid password";
+                isFormDisabled = false;
+                return;
             }
             else
             {
-                //error message will be displayed
-                message = "Something went wrong. Profile Creation Canceled.";
-                isFormDisabled = false;
+                var addProfileToDb = await AppState.AddNewProfileToDb(newProfile);
+
+                //testing the addProfileToDb conditional
+                @* var addProfileToDb = true; *@
+                @* var addProfileToDb = false; *@
+
+
+                if (addProfileToDb == true)
+                {
+                    //updates AppState to reflect changes
+                    StateHasChanged();
+                    message = "Profile Creation Successful.  Creating adding profile owner as a patient connected to this profile...";
+
+                    //Testing to allow time to verify message works
+                    await Task.Delay(5000);
+
+
+
+
+                    await HandleValidSubmit();
+
+                }
+                else
+                {
+                    //error message will be displayed
+                    message = "Something went wrong. Profile Creation Canceled.";
+                    isFormDisabled = false;
+
+                }
 
             }
 
         }
-
-
+        else
+        {
+            message = "Something went wrong.  Please put in a valid email and password";
+            return;
+        }
 
     }
 

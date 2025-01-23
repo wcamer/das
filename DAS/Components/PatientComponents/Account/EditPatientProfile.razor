@@ -8,7 +8,6 @@
 
 <h1>Edit Profile Information</h1>
 
-
 @if(tEProfileWasLoaded != true)
 {
     <p>Something went wrong. Try logging in and try again</p>
@@ -161,30 +160,48 @@ else
     private string deleteWarningMessage = $"WARNING: This will permanently erase all data for the following: your profile, patients connected to your profile, all non-completed/canceled appointments, and doctor's notes. Are you sure you want to delete your profile? (If you click yes, this will permanently delete all aforementioned items. )";
 
 
-    private int userId; 
+    private int userId = -1; 
 
     private List<Profile> profileList = [];
     private List<Patient> patientList = [];
 
 
-    protected override async Task OnInitializedAsync()
+    //protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //This is needed for when we need to check the lists in the State file for an existing profile
-        await AppState.LoadListsAsync();
-        profileList = AppState.Profiles;
-        patientList = AppState.Patients;
-
-        //This is hardcoded for albert wesker to edit
-        userId =  1;
-        
-        //Note: Change this to any disposable user that exists after 4
-        //userId = 8;
-
-        try
+        if(firstRender)
         {
+            //This is hardcoded for albert wesker to edit
+            //userId =  1;
+            
+            //Note: Change this to any disposable user that exists after 4
+            //userId = 8;
+
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                userId = foundUser.UserId;
+            }
+            else
+            {
+                tEProfileWasLoaded = false;
+                return;
+            }
+
+
+
+
+            //This is needed for when we need to check the lists in the State file for an existing profile
+            await AppState.LoadListsAsync();
+            profileList = AppState.Profiles;
+            patientList = AppState.Patients;
+            @* StateHasChanged(); *@
+
+
             var foundProfile = await AppState.GetProfileById(userId);
             if(foundProfile != null)
             {
+                //Find the patient of the same name to get the insurance information
                 var foundPatient = await AppState.GetPatientByName(foundProfile.FirstName, foundProfile.LastName , userId);
 
                 if(foundPatient != null)
@@ -199,10 +216,13 @@ else
                     profile.ZipCode = foundProfile.ZipCode;
                     profile.Email = foundProfile.Email;
                     profile.Password = foundProfile.Password;
-                    profile.InsuranceCompany = foundPatient.InsuranceCompany;
-                    profile.InsurancePolicyNumber = foundPatient.InsurancePolicyNumber;
 
+                    //the 2 lines below will assign the insurance company and policy number if they aren't null.  
+                    //If they are null then it defaults to the string "uninsured" handling the possible null references
+                    profile.InsuranceCompany = foundPatient.InsuranceCompany ?? "uninsured";
+                    profile.InsurancePolicyNumber = foundPatient.InsurancePolicyNumber ?? "uninsured";
                     tEProfileWasLoaded = true;
+                    StateHasChanged();
                 }
                 else
                 {
@@ -213,12 +233,11 @@ else
             {
                 tEProfileWasLoaded = false;
             }
+            
+            
+            
         
-        
-        }
-        catch 
-        {
-            tEProfileWasLoaded = false;
+            
         }
         
     }
@@ -260,7 +279,8 @@ else
             //get existing patient
             //Further Context: this is grabing a patient by filtering the options down via the ProfileId foreign key
             //Then we will select the the patient that matches the name of the Profile owner
-            var selectedPatient =  patientList.FirstOrDefault(p => p.ProfileId == tEProfile.ProfileId && p.FirstName == selectedProfile.FirstName && p.LastName == selectedProfile.LastName );
+            var selectedPatient =  patientList.FirstOrDefault(p => p.ProfileId == selectedProfile.ProfileId && p.FirstName == selectedProfile.FirstName && p.LastName == selectedProfile.LastName );
+            //Console.WriteLine($"------------> selectedPatient {selectedPatient.FirstName}.... tEProfile.ProfileId/first/lastname {tEProfile.ProfileId} ..{tEProfile.FirstName}...{tEProfile.LastName}");
             if(selectedPatient != null)
             {
                 //We need to split up the tEProfile that has been edited and avoid having to create another model
@@ -342,7 +362,9 @@ else
 
        if (profileDeletionCompleted == true)
        {
-            message = "Delection Completed.  Returning to Home Page";
+            //This will log the user out and delete any persisting login info
+            await UserService.DeleteLoggedInUser();
+            message = "Deletion Completed.  Returning to Home Page";
             isFormDisabled = true;
             await Task.Delay(5000);
             //This is for testing to see if the navigation will redirect after it is completed

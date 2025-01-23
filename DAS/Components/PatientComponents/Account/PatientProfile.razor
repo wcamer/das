@@ -2,28 +2,40 @@
 @inject AppState AppState
 @rendermode InteractiveServer
 
-<div>
-    <h2>Account Information</h2>
+
+@if (userId <= 0)
+{
+    <p>--------- Login to view Information ----------</p>
+}
+else
+{
     <div>
+        <h2>Account Information</h2>
         <div>
-            <span>Name: @(profile.FirstName + " " + profile.LastName)</span>
+            <div>
+                <span>Name: @(profile.FirstName + " " + profile.LastName)</span>
+            </div>
+
+            <div>
+                <span>Telephone: @profile.Telephone</span>
+            </div>
+
+
+            <div>
+                <span>Insurance: @profile.InsuranceCompany</span>
+            </div>
+
+            <div>
+                <span>Policy: @profile.InsurancePolicyNumber</span>
+            </div>
+            <div>
+                <span>ProfileId: @profile.ProfileId</span>
+            </div>
+
         </div>
-
-        <div>
-            <span>Telephone: @profile.Telephone</span>
-        </div>
-
-
-        <div>
-            <span>Insurance: @profile.InsuranceCompany</span>
-        </div>
-
-        <div>
-            <span>Policy: @profile.InsurancePolicyNumber</span>
-        </div>
-
     </div>
-</div>
+}
+
 
 @code
 {
@@ -37,7 +49,7 @@
 
     private TemporaryExtentedProfile profile = new TemporaryExtentedProfile
         {
-
+            ProfileId = -2,
             FirstName = string.Empty,
             LastName = string.Empty,
             Telephone = string.Empty,
@@ -54,40 +66,94 @@
 
         };
 
-    private int userId;
+    private int userId = -1;
 
-    protected override async Task OnInitializedAsync()
+    @* protected override async Task OnInitializedAsync() *@
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await AppState.LoadListsAsync();
-
-        //hardcoded test user Albert Wesker ProfileId 1
-        //Another acceptable test user Cloud Strife profileID 3
-        userId = 1;
-
-        //Note: Change this to a disposable profile above 5 (if it exists already)
-        //userId = 8;
-
-        //This will be used to get the user's profile based on their profileId provided to the userId variable
-        var userProfileData = await AppState.GetProfileById(userId);
-        //This will make sure the user's profile is found
-        if (userProfileData != null)
+        if (firstRender || userId <= 0)
         {
-            //using the found profile data we will now get the user's patient data to extract the insurance data
-            var userPatientData = await AppState.GetPatientByName(userProfileData.FirstName, userProfileData.LastName, userId);
-            if (userPatientData != null)
+            await AppState.LoadListsAsync();
+            @* StateHasChanged(); *@
+
+
+            //hardcoded test user Albert Wesker ProfileId 1
+            //Another acceptable test user Cloud Strife profileID 3
+            //userId = 1;
+
+            //Note: Change this to a disposable profile above 5 (if it exists already)
+            //userId = 8;
+
+            var foundUser = await UserService.GetLoggedInUser();
+
+            if (foundUser != null)
             {
-                profile.FirstName = userProfileData.FirstName;
-                profile.LastName = userProfileData.LastName;
-                profile.Telephone = userProfileData.Telephone;
-                profile.Address = userProfileData.Address;
-                profile.City = userProfileData.City;
-                profile.State = userProfileData.State;
-                profile.ZipCode = userProfileData.ZipCode;
-                profile.Email = userProfileData.Email;
-                profile.InsuranceCompany = userPatientData.InsuranceCompany;
-                profile.InsurancePolicyNumber = userPatientData.InsurancePolicyNumber;
+                userId = foundUser.UserId;
+                @* StateHasChanged(); *@
             }
-        }
+            else
+            {
+                return;
+            }
+
+            Console.WriteLine($"*****************updated userId:{userId}");
+
+
+            @* await AppState.LoadListsAsync();
+            StateHasChanged(); *@
+
+            //This will be used to get the user's profile based on their profileId provided to the userId variable
+            var userProfileData = await AppState.GetProfileById(userId);
+
+            //Console.WriteLine($"*****************userprofileData:{userProfileData}");
+            //Console.WriteLine($"*****************userprofileData:{userProfileData.FirstName} profileName {profile.FirstName}");
+
+            //This will make sure the user's profile is found
+            if (userProfileData != null)
+            {
+                //using the found profile data we will now get the user's patient data to extract the insurance data
+                var userPatientData = await AppState.GetPatientByName(userProfileData.FirstName, userProfileData.LastName, userId);
+                if (userPatientData != null)
+                {
+                    profile.ProfileId = userProfileData.ProfileId;
+                    profile.FirstName = userProfileData.FirstName;
+                    profile.LastName = userProfileData.LastName;
+                    profile.Telephone = userProfileData.Telephone;
+                    profile.Address = userProfileData.Address;
+                    profile.City = userProfileData.City;
+                    profile.State = userProfileData.State;
+                    profile.ZipCode = userProfileData.ZipCode;
+                    profile.Email = userProfileData.Email;
+                    profile.InsuranceCompany = userPatientData.InsuranceCompany;
+                    profile.InsurancePolicyNumber = userPatientData.InsurancePolicyNumber;
+                    @* StateHasChanged(); *@
+                    Console.WriteLine($">>>>>>>>>>>>profileName {profile.FirstName} <-----");
+
+                }
+                //current problem is that there is no patient info being found
+                else
+                {
+                    @* profile.ProfileId = userProfileData.ProfileId;
+
+                    profile.FirstName = userProfileData.FirstName;
+                    profile.LastName = userProfileData.LastName;
+                    profile.Telephone = userProfileData.Telephone;
+                    profile.Address = userProfileData.Address;
+                    profile.City = userProfileData.City;
+                    profile.State = userProfileData.State;
+                    profile.ZipCode = userProfileData.ZipCode;
+                    profile.Email = userProfileData.Email;
+                    profile.InsuranceCompany = "Uninsured";
+                    profile.InsurancePolicyNumber = "uninsured"; *@
+
+                    Console.WriteLine($">>>>>>>>>>> we ar missing userpatientdata <-----");
+
+                }
+                StateHasChanged();
+            }
+
+        }// end of firstRender conditional
+
 
 
 
