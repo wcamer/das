@@ -8,6 +8,8 @@ public class Profile
 
     public int ProfileId { get; set; }
 
+    public string? Type { get; set; } = "Patient"; //defaults to Patient
+
     [RegularExpression(@"^[a-zA-z]*$",
     ErrorMessage = "First name must be at least 2 letters but no more than 20 letters long")]
     [StringLength(20, MinimumLength = 2)]
@@ -58,5 +60,7 @@ public class Profile
     public string? Email { get; set; }
 
     public string? Password { get; set; }
+
+    // public string HashedPassword { get; set; } = string.Empty;
 
 }
