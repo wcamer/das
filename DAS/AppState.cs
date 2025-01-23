@@ -2,17 +2,23 @@ using DAS.Models;
 using DAS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace DAS;
 
 public class AppState
 {
-    private readonly DASContext _dbContext;
 
-    public AppState(DASContext dbContext)
+
+    private readonly DASContext _dbContext;
+    private readonly IPasswordHasher<Profile> _passwordHasher;
+    public AppState(DASContext dbContext, IPasswordHasher<Profile> passwordHasher)
     {
         _dbContext = dbContext;
+        _passwordHasher = passwordHasher;
     }
+
 
 
     public List<Appointment> Appointments = [];
@@ -57,7 +63,7 @@ public class AppState
                 _dbContext.Appointments.Add(appointment);
                 await _dbContext.SaveChangesAsync();
                 Appointments.Add(appointment); // updates the appointments list in state
-
+                await LoadListsAsync();
                 return true;
             }
 
@@ -149,14 +155,28 @@ public class AppState
 
     // ------------- Patient Profile Functions Section--------------
     //This will check and return a profile if it exists based on the email and password
-    public async Task<Profile?> GetProfileByCreds(string email, string password)
+    public async Task<Profile?> GetProfileByCreds(Profile submittedProfile, string email, string password)
     {
         try
         {
-            var profile = await _dbContext.Profiles.SingleOrDefaultAsync(p => p.Email == email && p.Password == password);
+            //Console.WriteLine($"============ email:{email} password:{password} ");
+
+            var profile = await _dbContext.Profiles.SingleOrDefaultAsync(p => p.Email == email);
+            var profileCheck = await _dbContext.Profiles.SingleOrDefaultAsync(p => p.ProfileId == 13);
+            //Console.WriteLine($">>>>>>>>>>>>>>>>>>> email:{profileCheck.Email} password:{profileCheck.Password} ");
+
             if (profile != null)
             {
-                return profile;
+                var result = _passwordHasher.VerifyHashedPassword(profile, profile.Password ?? "", password);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    return profile;
+                }
+                else
+                {
+                    return null;
+                }
+
             }
             else
             {
@@ -184,7 +204,6 @@ public class AppState
                 _dbContext.Profiles.Add(newProfile);
                 await _dbContext.SaveChangesAsync();
                 Profiles.Add(newProfile); // updates the profiles list in state
-
                 return true;
             }
 
@@ -321,6 +340,9 @@ public class AppState
         try
         {
             var patient = await _dbContext.Patients.SingleOrDefaultAsync(p => p.PatientId == patientId && p.ProfileId == userId);
+            //Console.Writeline($"@@@@@@@@@@@@@@@ in side the EditPatient in AppState editedPatient.first/lastname/id {editedPatient.FirstName} {editedPatient.LastName} {editedPatient.PatientId}");
+            //Console.Writeline($"@@@@@@@@@@@@@@@ in side the patient in AppState patient.first/lastname/id {patient.FirstName} {patient.LastName} {patient.PatientId}");
+
             if (patient == null)
             {
                 return false;
@@ -329,7 +351,6 @@ public class AppState
             {
                 //getting a list of appointments for the patient to update the name to remaind consistent
                 var patientAppointmentList = await _dbContext.Appointments.Where(a => a.PatientId == patient.PatientId).ToListAsync();
-
 
                 //if the patient has appointment info then it will be edited and update the orderedAppointments list
                 if (patientAppointmentList != null)
@@ -354,14 +375,20 @@ public class AppState
                     // await LoadListsAsync();
                 }
 
-
-
+                //Console.Writeline($"/*-/*-/*-/*-/*>>>>>>>>>>>>>>>>>>>>>>>patient/firstname/lastname/profileid/patientid oldname: {patient.FirstName} {patient.LastName} {patient.ProfileId} {patient.PatientId}");
+                //Console.Writeline($"/*-/*-/*-/*-/*<<<<<<<<<<<<<<<<<<<<,,,, editedpatient/firstname/lastname/profileid/patientid newName:{editedPatient.FirstName} {editedPatient.LastName} {editedPatient.ProfileId} {editedPatient.PatientId}");
 
                 //Checking to see if the patient also is also a profile owner to keep data consistent
-                var patientAlsoHasAProfile = await _dbContext.Profiles.SingleOrDefaultAsync(p => p.ProfileId == userId);
+                var patientAlsoHasAProfile = await _dbContext.Profiles.SingleOrDefaultAsync(f =>
+                            f.FirstName == patient.FirstName &&
+                            f.LastName == patient.LastName &&
+                            f.ProfileId == userId);
+
                 //If the patient doesn't also own a profile then we just change the patient info
                 if (patientAlsoHasAProfile == null)
                 {
+                    //Console.Writeline($"/*-/*-/*-/*-/*-?????????????????????????????????????????????????????????????????");
+
                     patient.FirstName = editedPatient.FirstName;
                     patient.LastName = editedPatient.LastName;
                     patient.InsuranceCompany = editedPatient.InsuranceCompany;
@@ -370,16 +397,22 @@ public class AppState
                     await _dbContext.SaveChangesAsync();
 
                     // update the lists to reflect the changes
-                    // await LoadListsAsync();
+                    await LoadListsAsync();
                     return true;
 
                 }
                 //If patient also owns a profile we will change the name on it too
                 else
                 {
+                    //Console.Writeline($"/*-/*-/*-/*-/*-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! patientAlsoHasAProfile {patientAlsoHasAProfile.FirstName} {patientAlsoHasAProfile.LastName} {patientAlsoHasAProfile.ProfileId}");
+                    //Console.Writeline($"/*-/*-/*-/*-/*-================================= patient/firstname/lastname/profileid/patientid {patient.FirstName} {patient.LastName} {patient.ProfileId} {patient.PatientId}");
                     //this will make sure the names stay consistent in the profile info compared to the patient info
                     patientAlsoHasAProfile.FirstName = editedPatient.FirstName;
                     patientAlsoHasAProfile.LastName = editedPatient.LastName;
+
+                    //Console.Writeline($"/*-/*-/*-/*-/*-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! patientAlsoHasAProfile with name updated {patientAlsoHasAProfile.FirstName} {patientAlsoHasAProfile.LastName} {patientAlsoHasAProfile.ProfileId}");
+
+
 
                     //this will make sure the names stay consistent in the patient info compared to the profile info
                     patient.FirstName = editedPatient.FirstName;
@@ -531,4 +564,4 @@ public class AppState
 
 
 
-}// end of Publice Class AppState
+}// end of Public Class AppState
