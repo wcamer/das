@@ -7,7 +7,13 @@
 @rendermode InteractiveServer
 
 <h1>Add Patient Group Member</h1>
-<EditForm Model="@newGroupMember" OnValidSubmit="@(CreateNewGroupMember)" FormName="PatientCreateGroupMemberForm">
+@if(userId <= -1)
+{
+    <p>-------- Login to be able to use this function --------</p>
+}
+else 
+{
+    <EditForm Model="@newGroupMember" OnValidSubmit="@(CreateNewGroupMember)" FormName="PatientCreateGroupMemberForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -27,15 +33,17 @@
         <InputText @bind-Value="newGroupMember.LastName" />
         <ValidationMessage For="@(() => newGroupMember.LastName)" />
     </div>
-   
+    
 
-    <button type="submit">Submit</button>
-</EditForm>
+        <button type="submit">Submit</button>
+    </EditForm>
 
-<div>
-    <h2>Patient Group</h2>
-    <PatientGroup />
-</div>
+    <div>
+        <h2>Patient Group</h2>
+        <PatientGroup />
+    </div>
+}
+
 
 
 @code {
@@ -54,20 +62,37 @@
     
 
     private string? message;
+    private int userId = -1;
 
     private void HandleValidSubmit()
     {
 
-        message = "New Group Member successfully created. Returning to Account";
+        message = "New Group Member successfully created. Returning to Dashboard";
         @* await Task.Delay(4000); *@
         @* NavigationManager.NavigateTo("/Dashboard"); *@
     }
 
-    protected override async Task OnInitializedAsync()
+    @* protected override async Task OnInitializedAsync() *@
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //Loading up the lists from the DB
-        await AppState.LoadListsAsync();
-        patients = AppState.Patients ;
+        if(firstRender)
+        {
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                userId = foundUser.UserId;
+            }
+            else
+            {
+                return;
+            }
+
+            //Loading up the lists from the DB
+            await AppState.LoadListsAsync();
+            patients = AppState.Patients ;  
+            StateHasChanged();
+        }
+        
     }
 
 
@@ -90,9 +115,12 @@
         }; *@
 
         //This is hardcoded for albert wesker ProfileId 1
-        var groupOwner = patients.FirstOrDefault(p => p.ProfileId == 1 );
+        @* var groupOwner = patients.FirstOrDefault(p => p.ProfileId == 1 ); *@
+        // Dynamically check for groupOwner based in the logged in user's id (profileId)
+        var groupOwner = patients.FirstOrDefault(p => p.ProfileId == userId);
+
         //This will check if the newGroupMember already is a patient in the user's patient group
-        var existingGroupMember = patients.FirstOrDefault(p => p.FirstName == newGroupMember.FirstName && p.LastName == newGroupMember.LastName && p.ProfileId == 1);
+        var existingGroupMember = patients.FirstOrDefault(p => p.FirstName == newGroupMember.FirstName && p.LastName == newGroupMember.LastName && p.ProfileId == userId);
         if (groupOwner != null && existingGroupMember == null)
         {
             Patient createdGroupMember = new Patient
@@ -115,6 +143,7 @@
                 // update the lists
                 @* await AppState.LoadListsAsync(); *@
                 patients.Add(createdGroupMember);
+                await AppState.LoadListsAsync();
                 StateHasChanged();
                 @* await HandleValidSubmit(); *@
                 message = "New group member was created successfully.  Refresh to view results or return to dashboard";

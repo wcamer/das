@@ -5,30 +5,26 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PatientList/>
+@* In the section it will be only for testing *@
+@using DAS.Components.PatientComponents.Account
 
-<EditForm Model="@loginModel" OnValidSubmit="Login" FormName="LoginForm">
+<PatientList />
+
+<EditForm Model="@loginModel" OnValidSubmit="Authenticate" FormName="LoginForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
+    <div>
+        <h3>@errorMessage</h3>
+        <h3>@message</h3>
+    </div>
 
-    @if (!string.IsNullOrEmpty(loginModel.Message))
-    {
-        <div class="alert alert-info">@loginModel.Message</div>
-    }
-    @*if (logOutFlag == true)
-    {
-        <p>Are you sure you want to sign out? </p>
-        <button @onclick="signOut">Yes</button>
-        <button @onclick="@(() => {logOutFlag = false; loginModel.Message = string.Empty;} )">No</button>
-    }
-    *@
-    <p>Please Login</p>
+    <h2>Please Login</h2>
 
     <label>Email:</label>
-    <InputText @bind-Value="loginModel.Email" type="email" />
+    <InputText @bind-Value="loginModel.Email" type="email" disabled=@isFormDisabled />
 
     <label>Password:</label>
-    <InputText @bind-Value="loginModel.Password" type="password" />
+    <InputText @bind-Value="loginModel.Password" type="password" disabled=@isFormDisabled />
     <button>Login</button>
     @*if (activeUser == true)
     {
@@ -37,15 +33,15 @@
     }*@
 </EditForm>
 
-@code 
-{   
+@code
+{
     //Initialize Object for data to be stored into
     private LoginModel loginModel = new LoginModel
-    {
-        Email = string.Empty,
-        Password = string.Empty,
-        Message = string.Empty
-    };
+        {
+            Email = string.Empty,
+            Password = string.Empty,
+        @* Message = string.Empty *@
+};
 
     //Used for displaying a message to the user if logged in, logged out, or login error
 
@@ -63,22 +59,71 @@
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
-        public string? Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required]
-        public string? Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
-        public string? Message;
+        @* public string? Message; *@
     }
 
+    private string? errorMessage;
+    private string? message;
+    private bool isFormDisabled = false;
+
+
+    private async Task Authenticate()
+    {
+        //Disable the login form while attempting to login
+        isFormDisabled = true;
+
+        //Clear out any logged in user
+        await UserService.DeleteLoggedInUser();
+
+
+        message = "Attempting to login...";
+        errorMessage = "";
+        StateHasChanged();
+        //simulated delay to give time for message to be read
+        await Task.Delay(5000);
+
+
+        var User = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+        if (User != null)
+        {
+
+
+            await UserService.SetLoggedInUser(User);
+            @* Console.WriteLine($"------------------------{User.Type}"); *@
+
+            message = "Login Successful! Directing to dashboard";
+            errorMessage = "";
+            StateHasChanged();
+
+            //This is just for demo purposes to show that the login was successful
+            await Task.Delay(3000);
+            NavigationManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            //reset message variable
+            message = "";
+            //re-enable the login form to try again
+            isFormDisabled = false;
+            @* Console.WriteLine($"*****************UserService.CurrentUser.userid:{UserService.CurrentUser}"); *@
+
+            errorMessage = "Login failed. Please check credentials and try again";
+        }
+    }// End of Authenticate function
+
     //This function will log in a user using local storage, may need to be updated after authentication is figured out.
-    private async Task Login()
+    @* private async Task Login()
     {   
         // Checks if both inputs have content, and runs a query looking for an account with a matching username and password
         if (!string.IsNullOrEmpty(loginModel.Email) && !string.IsNullOrEmpty(loginModel.Password))
         {
             var validAccount = await AppState.GetProfileByCreds(loginModel.Email, loginModel.Password);
-            
+
             if (validAccount == null) // needs to equal null
             {
                 loginModel.Message = "Failed to login. Email and or Password may be incorrect";
@@ -92,35 +137,35 @@
                 //Insert whatever code here to deal with the login, need to talk to team about
             }
         }
-        
-    }
+
+    } *@
 
     /*
     This function was how William handled login in the past
-    Checks local storge for stored userid-- to my understanding, this is a temporary way to keep someone logged in
-    until authentication is figured out. 
-    We would need to include a js script somewhere for functions to handle local storage.
-    
-    private async Task<int> getLoggedInUser()
+        Checks local storge for stored userid-- to my understanding, this is a temporary way to keep someone logged in
+        until authentication is figured out.
+        We would need to include a js script somewhere for functions to handle local storage.
+
+        private async Task<int> getLoggedInUser()
     {
         string targetString = await JSRuntime.InvokeAsync<string>("getLocalStorageItem", "LoggedInUser");
         if (!string.IsNullOrEmpty(targetString) && int.TryParse(targetString, out int userId))
         {
             return userId;
-        }
+            }
         else
         {
             return 0;
-        }
-    }*/
-    
-    
-    public async Task signOut()
+            }
+        }*/
+
+
+    @* public async Task signOut()
     {
         //Add whatever code to deal with the logout. Below code is placeholder for now.
         loginModel.Message = "Log out was successful.";
         //activeUser = false;
         //logOutFlag = false;
 
-    }
+    } *@
 }

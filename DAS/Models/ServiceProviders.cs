@@ -8,6 +8,8 @@ public class ServiceProviders
 
     public required int ServiceProvidersId { get; set; }
 
+    public string? Type { get; set; } = "Associate"; //defaults to Associate
+
     [RegularExpression(@"^[a-zA-z]*$",
     ErrorMessage = "First name must be at least 2 letters but no more than 20 letters long")]
     [StringLength(20, MinimumLength = 2)]

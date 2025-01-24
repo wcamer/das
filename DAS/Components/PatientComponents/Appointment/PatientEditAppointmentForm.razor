@@ -6,69 +6,78 @@
 @using DAS.Components
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+@* @inject IJSRuntime JSRuntime *@
+@inject UserService UserService
 
 
 <h1>Edit Appointment</h1> 
-<EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@deleteWarningFlag"> 
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert alert-info">@message</div>
-    }
-    @if (deleteWarningFlag == true)
-    {
+@if(userId <= 0)
+{
+    <p>----------Please login to use this function----------------</p>
+}
+else
+{
+    <EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@deleteWarningFlag"> 
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+        @if (deleteWarningFlag == true)
+        {
+            <div>
+                <button @onclick="ProcessDeletePatientAppointment" disabled="@isFormDisabled">Yes</button>
+                <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+            </div>
+        }
+
         <div>
-            <button @onclick="ProcessDeletePatientAppointment" disabled="@isFormDisabled">Yes</button>
-            <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+            <label>Date:</label>
+            <InputDate @bind-value="appointment.Date" disabled="@deleteWarningFlag" />
+            <ValidationMessage For="@(() => appointment.Date)" />
         </div>
-    }
 
-    <div>
-        <label>Date:</label>
-        <InputDate @bind-value="appointment.Date" disabled="@deleteWarningFlag" />
-        <ValidationMessage For="@(() => appointment.Date)" />
-    </div>
+        <div>
+            <label>Time:</label>
+            <input @bind-value="appointment.Time" disabled="@deleteWarningFlag" />
+            <ValidationMessage For="@(() => appointment.Time)" />
+        </div>
 
-    <div>
-        <label>Time:</label>
-        <input @bind-value="appointment.Time" disabled="@deleteWarningFlag" />
-        <ValidationMessage For="@(() => appointment.Time)" />
-    </div>
+        <div>
+            <label>Appointment Set For:</label>
+            <input value="@targetPatient" disabled />
+        </div>
 
-    <div>
-        <label>Appointment Set For:</label>
-        <input value="@targetPatient" disabled />
-    </div>
-
-    <div>
-        <label>Name:</label>
-        <InputSelect @bind-Value="appointment.PatientId" disabled="@deleteWarningFlag">
-            <option value="">Select A Patient</option>
-            @foreach (var p in patients)
-            {
-                //hardcoded example for Albert Wesker profileid 1 patientId 1
-                //another acceptable test user is Cloud Strife profileid 3 patientId 5
-                @* @if (p.ProfileId == 1 || p.PatientId == 1) *@
-                @if(p.ProfileId == userId)
+        <div>
+            <label>Name:</label>
+            <InputSelect @bind-Value="appointment.PatientId" disabled="@deleteWarningFlag">
+                <option value="">Select A Patient</option>
+                @foreach (var p in patients)
                 {
-                    <option value="@p.PatientId">@p.FirstName @p.LastName</option>
+                    //hardcoded example for Albert Wesker profileid 1 patientId 1
+                    //another acceptable test user is Cloud Strife profileid 3 patientId 5
+                    @* @if (p.ProfileId == 1 || p.PatientId == 1) *@
+                    @if(p.ProfileId == userId)
+                    {
+                        <option value="@p.PatientId">@p.FirstName @p.LastName</option>
+                    }
                 }
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => appointment.PatientId)" />
-    </div>
+            </InputSelect>
+            <ValidationMessage For="@(() => appointment.PatientId)" />
+        </div>
 
-    <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
-    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
-</EditForm>
+        <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
+        <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
+    </EditForm>
+}
+
 
 
 @code {
     //Structure of the form
     private Appointment appointment = new Appointment
-        {
+    {
             PatientId = -1, // default part to check to see if user is logged in or not
             Name = "FirstName LastName",
             Date = DateTime.Now,
@@ -76,12 +85,13 @@
             Status = "Pending",
             AppointSetterId = -1 //default part of check to see if user is logged in
 
-        };
+    };
+
     [Parameter]
     public int id {get; set;}
     private string? message;
     @* int appointmentID; *@
-    int userId;
+    int userId = -1;
     bool deleteWarningFlag = false;
     
     //This is a flag to disable the form if the appointment is deleted
@@ -108,42 +118,56 @@
     //testing purposes
     @* bool dataLoadedFlag = false; *@
     private string deleteWarningMessage = $"Are you sure you want to delete this appointment? (If you click yes, this will permanently delete the appointment)";
+    
     @* protected override async Task OnInitializedAsync() *@
-
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //Loading up the lists from the DB
-        await AppState.LoadListsAsync();
-        patients = AppState.Patients ;
-
-        //note this is hardcoded for albert wesker profileid 1
-        userId = 1;
-        //note another hardcoded example can be Cloud Strife profileid 3
-        //userId = 8;
-
-        var foundAppointment = await AppState.GetAppointmentById(id , userId);
-        if(foundAppointment != null)
+        if(firstRender)
         {
-            appointment = foundAppointment;
-            
-            targetPatient = appointment.Name;
+            //Loading up the lists from the DB
+            await AppState.LoadListsAsync();
+            patients = AppState.Patients ;
 
-            //This will retain appointment info before it gets changed.
-            oldAppointment = new Appointment
+            //note this is hardcoded for albert wesker profileid 1
+            //userId = 1;
+            //note another hardcoded example can be Cloud Strife profileid 3
+            //userId = 8;
+            //find the current user creds
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
             {
-                PatientId = foundAppointment.PatientId,
-                Name = foundAppointment.Name,
-                Date = foundAppointment.Date,
-                Time = foundAppointment.Time,
-                Status = foundAppointment.Status,
-                AppointSetterId = foundAppointment.AppointSetterId
-            };
+                userId = foundUser.UserId;
+            }
+            else
+            {
+                return;
+            }
+
+            var foundAppointment = await AppState.GetAppointmentById(id , userId);
+            if(foundAppointment != null)
+            {
+                appointment = foundAppointment;
+                
+                targetPatient = appointment.Name;
+
+                //This will retain appointment info before it gets changed.
+                oldAppointment = new Appointment
+                {
+                    PatientId = foundAppointment.PatientId,
+                    Name = foundAppointment.Name,
+                    Date = foundAppointment.Date,
+                    Time = foundAppointment.Time,
+                    Status = foundAppointment.Status,
+                    AppointSetterId = foundAppointment.AppointSetterId
+                };
+                StateHasChanged();
+            }
+            else
+            {
+                message = "Could not find appointment...";
+            }
         }
-        else
-        {
-            message = "Could not find appointment...";
-        }
+        
     }
 
     // OnAfterRenderAsnc(bool firstRender) goes here
@@ -180,7 +204,7 @@
             //This will assign the name who the appointment is for
             editedAppointment.Name = $"{selectedPatient.FirstName} {selectedPatient.LastName}";
             
-            Console.WriteLine($"This is in the PatientEditAppointmentForm...........................\n{editedAppointment.AppointmentId} {editedAppointment.Name} {editedAppointment.AppointSetterId} {editedAppointment.Time}!!!!!!!!!!!!");
+            @* Console.WriteLine($"This is in the PatientEditAppointmentForm...........................\n{editedAppointment.AppointmentId} {editedAppointment.Name} {editedAppointment.AppointSetterId} {editedAppointment.Time}!!!!!!!!!!!!"); *@
             
             
             
@@ -215,7 +239,7 @@
             {
                 //error message will be displayed 
                 message = "Something went wrong.  Appointment Update Canceled. Try again later or try scheduling an appointment for a different time and/or date.";
-                Console.WriteLine(message);
+                @* Console.WriteLine(message); *@
             }
         }
         //if there wasn't a valid patient selected it will display a specific error message
@@ -242,7 +266,7 @@
 
        if (deletionCompleted == true)
        {
-            message = "Appointment Deleted Successfully.  Returning to Home Page";
+            message = "Appointment Deleted Successfully.  Returning to Dashboard";
             isFormDisabled = true;
             await Task.Delay(2000);
             //This is for testing to see if the navigation will redirect after it is completed

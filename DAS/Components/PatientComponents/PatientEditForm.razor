@@ -3,61 +3,69 @@
 @using DAS.Components
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+@* @inject IJSRuntime JSRuntime *@
 @rendermode InteractiveServer
+@* @inject UserService UserService *@
 
 <h1>Edit Patient</h1> 
-<EditForm Model="@patient" FormName="PatientEditForm" disabled="@isFormDisabled"> 
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert alert-info">@message</div>
-    }
-    @if (deleteWarningFlag == true) 
-    {
+@if(userId <= 0)
+{
+    <p>--------- Please Login to use this function-----------</p>
+}
+else
+{
+    <EditForm Model="@patient" FormName="PatientEditForm" disabled="@isFormDisabled"> 
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+        @if (deleteWarningFlag == true) 
+        {
+            <div>
+                <button @onclick="ProcessDeletePatient" disabled="@isFormDisabled">Yes</button>
+                <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+            </div>
+        }
+
+        
         <div>
-            <button @onclick="ProcessDeletePatient" disabled="@isFormDisabled">Yes</button>
-            <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+            <label>First Name:</label>
+            <InputText @bind-Value="patient.FirstName" disabled="@isFormDisabled" />
+            <ValidationMessage For="@(() =>patient.FirstName)" />
         </div>
-    }
+        <div>
+            <label>Last Name:</label>
+            <InputText @bind-Value="patient.LastName" disabled="@isFormDisabled" />
+            <ValidationMessage For="@(() => patient.LastName)" />
+        </div>
 
-    
-    <div>
-        <label>First Name:</label>
-        <InputText @bind-Value="patient.FirstName" disabled="@isFormDisabled" />
-        <ValidationMessage For="@(() =>patient.FirstName)" />
-    </div>
-    <div>
-        <label>Last Name:</label>
-        <InputText @bind-Value="patient.LastName" disabled="@isFormDisabled" />
-        <ValidationMessage For="@(() => patient.LastName)" />
-    </div>
+        <div>
+            <label>Insurance Company:</label>
+            <InputText @bind-Value="patient.InsuranceCompany" disabled="@isFormDisabled" />
+            <ValidationMessage For="@(() => patient.InsuranceCompany)" />
+        </div>
 
-    <div>
-        <label>Insurance Company:</label>
-        <InputText @bind-Value="patient.InsuranceCompany" disabled="@isFormDisabled" />
-        <ValidationMessage For="@(() => patient.InsuranceCompany)" />
-    </div>
+        <div>
+            <label>Insurance Policy Number:</label>
+            <InputText @bind-Value="patient.InsurancePolicyNumber" disabled="@isFormDisabled" />
+            <ValidationMessage For="@(() => patient.InsurancePolicyNumber)" />
+        </div>
 
-    <div>
-        <label>Insurance Policy Number:</label>
-        <InputText @bind-Value="patient.InsurancePolicyNumber" disabled="@isFormDisabled" />
-        <ValidationMessage For="@(() => patient.InsurancePolicyNumber)" />
-    </div>
+        <div>
+            <label>Patient Data For:</label>
+            <input value="@targetPatient" disabled />
+        </div>
 
-     <div>
-        <label>Patient Data For:</label>
-        <input value="@targetPatient" disabled />
-    </div>
+        <button type="submit" @onclick="HandleValidSubmit" disabled="@isFormDisabled">Submit</button>
+        <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@isFormDisabled">Delete</button>
+    </EditForm>
+}
 
-    <button type="submit" @onclick="HandleValidSubmit" disabled="@isFormDisabled">Submit</button>
-    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@isFormDisabled">Delete</button>
-</EditForm>
 
 @code {
     //Structure of the form
-    
     private Patient patient = new Patient
     {
         FirstName = string.Empty,
@@ -81,7 +89,7 @@
     public int patientId {get; set;}
     private string? message;
     @* int appointmentID; *@
-    int userId;
+    int userId = -1;
     bool deleteWarningFlag = false;
     
     //This is a flag to disable the form if the appointment is deleted
@@ -97,44 +105,72 @@
     private string deleteWarningMessage = $"Are you sure you want to delete this patient? (If you click yes, this will permanently delete the patient)";
 
 
-    protected override async Task OnInitializedAsync()
+    @* protected override async Task OnInitializedAsync() *@
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //Loading up the lists from the DB
-        await AppState.LoadListsAsync();
-        patients = AppState.Patients ;
-
-        //note this is hardcoded for albert wesker profile id 1 patientid 1
-        //another hardcoded user could be Cloud Strife profile id 3 patient id 5
-        userId = 1;
-
-        //Note: Chagne this to a disposable profile when deleting, any number after 4 (if it exists)
-        //userId = 8;
-
-        var foundPatient = await AppState.GetPatientById(patientId , userId);
-        if(foundPatient != null)
+        if(firstRender)
         {
-            patient = foundPatient;
-            
-            targetPatient = $"{foundPatient.FirstName } {foundPatient.LastName}";
+            //note this is hardcoded for albert wesker profile id 1 patientid 1
+            //another hardcoded user could be Cloud Strife profile id 3 patient id 5
+            //userId = 1;
 
+            //Note: Chagne this to a disposable profile when deleting, any number after 4 (if it exists)
+            //userId = 8;
 
-            //This will retain appointment info before it gets changed.
-            oldPatient = new Patient
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
             {
-                PatientId = foundPatient.PatientId,
-                FirstName = foundPatient.FirstName,
-                LastName = foundPatient.LastName,
-                InsuranceCompany = foundPatient.InsuranceCompany,
-                InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
-            };
-        }
-        else
-        {
-            message = "Could not find the patient...";
-        }
-    }
+                userId = foundUser.UserId;
+            }
+            else
+            {
+                return;
+            }
 
-    // OnAfterRenderAsnc(bool firstRender) goes here
+            //Loading up the lists from the DB
+            await AppState.LoadListsAsync();
+            patients = AppState.Patients ;
+            foreach(var i in patients)
+            {
+                Console.WriteLine($"....................in OnAfterRenderAsync()...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
+
+            }
+        
+            var foundPatient = await AppState.GetPatientById(patientId , userId);
+            if(foundPatient != null)
+            {
+                @* patient = foundPatient; *@
+                patient = new Patient
+                {
+                    PatientId = foundPatient.PatientId,
+                    FirstName = foundPatient.FirstName,
+                    LastName = foundPatient.LastName,
+                    InsuranceCompany = foundPatient.InsuranceCompany,
+                    InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
+                };
+                
+                targetPatient = $"{foundPatient.FirstName } {foundPatient.LastName}";
+
+
+                //This will retain PATIENT info before it gets changed.
+                oldPatient = new Patient
+                {
+                    PatientId = foundPatient.PatientId,
+                    FirstName = foundPatient.FirstName,
+                    LastName = foundPatient.LastName,
+                    InsuranceCompany = foundPatient.InsuranceCompany,
+                    InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
+                };
+                StateHasChanged();
+
+            }
+            else
+            {
+                message = "Could not find the patient...";
+            }
+        }
+       
+    }
     
     
 
@@ -145,7 +181,26 @@
         // Logic for handling form submission goes here
         @* return Task.CompletedTask; // Return a completed task *@
         @* message = "Appointment Successfully updated.";  *@
+
+        Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient this is patient ========...{patient.FirstName} {patient.LastName}");
+        Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient this is oldPatient ========...{oldPatient.FirstName} {oldPatient.LastName}");
+
+
+        foreach(var i in patients)
+            {
+                Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
+
+            }
+
+
         await SubmitEditPatient(patient);
+        foreach(var i in patients)
+            {
+                Console.WriteLine($"....................in HandleValidSubmit after call to submitEditPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
+
+            }
+        Console.WriteLine($"....................in handlevalidsubmit but AFTER the call to submitEditPatient this is oldPatient ========...{oldPatient.FirstName} {oldPatient.LastName}");
+
 
     }
 
@@ -159,15 +214,31 @@
         //hardcoded example for albert wesker profileid NOTE: this will be changed
         @* appointment.AppointSetterId = 1; *@
 
+        foreach(var i in patients)
+            {
+                Console.WriteLine($"....................before selectedPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
+
+            }
+
         
         // This will get a Patient object and assign to selectedPatient
+        //WHY ARE YOU CHANGING YOUR NAME HERE????
         var selectedPatient =  patients.FirstOrDefault(p => p.PatientId == editedPatient.PatientId);
+
+        //Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
+        foreach(var i in patients)
+        {
+            Console.WriteLine($".....after selected patient....{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
+
+        }
+        Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& editedPatient.first/lastname/id {editedPatient.FirstName} {editedPatient.LastName} {editedPatient.PatientId}");
+        //Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
 
         //This will check to make sure there is a valid patient that was selected
         if(selectedPatient != null)
         {
-           
-            
+            Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
+
             //This will take in the "id" that was a route parameter, the user's id (in testing it is hardcoded for Albert wesker profileId 1), and the appointment
             var editedPatientToDb = await AppState.EditPatient(patientId, userId, editedPatient);
             //testing line
@@ -192,6 +263,7 @@
                 };
 
                 targetPatient = $"{editedPatient.FirstName } {editedPatient.LastName}";
+                StateHasChanged();
             }
             else
             {

@@ -1,4 +1,4 @@
-@page "/appointment" 
+@page "/createAppointment" 
 @using System.ComponentModel.DataAnnotations
 @using DAS.Models
 @inject AppState AppState
@@ -8,7 +8,7 @@
 
 <h1>Create Appointment</h1>
 
-@if(userId < 1 )
+@if(userId <= 0 )
 {
     <div>
         <p>Please log in to make an appointment.  Thank You!</p>
@@ -91,19 +91,40 @@ else
     // This will contain a specific message that will be shown
     private string? message;
 
-    private int userId;
+    private int userId = -1;
+    
 
-    protected override async Task OnInitializedAsync()
+    //protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //Loading up the lists from the DB
-        await AppState.LoadListsAsync();
-        patients = AppState.Patients ;
+        if(firstRender)
+        {
+           //hardcoded for testing for user Albert Wesker profileId 1
+            //userId = 1;
 
-        //hardcoded for testing for user Albert Wesker profileId 1
-        userId = 1;
+            //Note change this to a dispoable Profile (any profileId above 5)
+            //userId = 8;
 
-        //Note change this to a dispoable Profile (any profileId above 5)
-        //userId = 8;
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                userId = foundUser.UserId;
+                @* StateHasChanged(); *@
+            }
+            else
+            {
+                return;
+            }
+            
+            //Loading up the lists from the DB
+            await AppState.LoadListsAsync();
+            patients = AppState.Patients; 
+            StateHasChanged();
+            Console.WriteLine($">>>>>>>>>>> {userId} <-----");
+
+        }
+        
+
     }
 
      

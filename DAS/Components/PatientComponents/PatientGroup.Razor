@@ -8,93 +8,110 @@
 
 
 
-<div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    Name
-                </th>
-                <th>
-                    Options
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @* Here the logic will go "for each appointment in appointments display the following: 
-                        Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
 
-            @if (patientGroupList != null)
-            {
-                @foreach(var p in patientGroupList)
+    @if(userId <= 0)
+    {
+        <p> --------- Login to view information  ------- </p>
+    }
+    else 
+    {
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Options
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Here the logic will go "for each appointment in appointments display the following: 
+                            Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
+
+                @if (patientGroupList != null)
                 {
-                    @* hardcode test for Albert Wesker profileid  1 and patiend id 1
-                    . another acceptable hardcode test is Cloud strife profileID 3 patient ID 5 *@
-                    @if (p.ProfileId == userId )
+                    @foreach(var p in patientGroupList)
                     {
-                         Console.WriteLine($"****************************** {p.FirstName} {p.LastName} {p.PatientId} profileid = {p.ProfileId}");
+                        @* hardcode test for Albert Wesker profileid  1 and patiend id 1
+                        . another acceptable hardcode test is Cloud strife profileID 3 patient ID 5 *@
+                        @if (p.ProfileId == userId )
+                        {
+                            Console.WriteLine($"****************************** {p.FirstName} {p.LastName} {p.PatientId} profileid = {p.ProfileId}");
 
-                        var patientEditRoute = $"/edit-patient/{p.PatientId}";
-                        var patientDetailsRoute = $"/patient-details/{p.PatientId}";
-                         <tr>
-                            <td>
-                                @(p.FirstName) @(p.LastName)
-                            </td>
-                            <td>
-                                <button>
-                                    <NavLink class="nav-link" href=@patientEditRoute>
-                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
-                                    </NavLink>
-                                </button> |
-                                <button>
-                                    <NavLink class="nav-link" href=@patientDetailsRoute>
-                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Details
-                                    </NavLink>
-                                </button>
-                            </td>
-                        </tr>
+                            var patientEditRoute = $"/edit-patient/{p.PatientId}";
+                            var patientDetailsRoute = $"/patient-details/{p.PatientId}";
+                            <tr>
+                                <td>
+                                    @(p.FirstName) @(p.LastName)
+                                </td>
+                                <td>
+                                    <button>
+                                        <NavLink class="nav-link" href=@patientEditRoute>
+                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                        </NavLink>
+                                    </button> |
+                                    <button>
+                                        <NavLink class="nav-link" href=@patientDetailsRoute>
+                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Details
+                                        </NavLink>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        
                     }
-                    
                 }
-            }
-            @* <tr>
-                <td>
-                    FirstName LastName
-                </td>
-                <td>
-                    <button>Edit</button> |
-                    <button>Details</button>
-                </td>
-            </tr> *@
 
+            </tbody>
+        </table>
+    </div>
 
+    }
+    
 
-
-        </tbody>
-    </table>
-
-
-</div>
 
 
  
 @code{
 
     private List<Patient> patientGroupList = [];
-    private int userId;
+    private int userId = -1;
 
-    protected override async Task OnInitializedAsync()
+    //protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await AppState.LoadListsAsync();
-        patientGroupList = AppState.Patients;
+        if(firstRender)
+        {
+            await AppState.LoadListsAsync();
+            patientGroupList = AppState.Patients;
 
-        //Hardcoded for Albert Wesker ProfileId 1
-        //Another acceptable test user is Cloud Strife ProfileId 3
-        userId = 1;
+            //Hardcoded for Albert Wesker ProfileId 1
+            //Another acceptable test user is Cloud Strife ProfileId 3
+            //userId = 1;
 
-        //For disposible user keep it numbers above 4 and ensure they already exist
-        //userId = 8;
+            //For disposible user keep it numbers above 4 and ensure they already exist
+            //userId = 8;
+
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                Console.WriteLine($"!!!!!!!!!!!!!!!!!<-----");
+
+                userId = foundUser.UserId;
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine($">>>>>>>>>>> we ar missing foundUserrrrrrrrrrrr <-----");
+
+                return;
+            }
+        }
+        
 
     }
 
