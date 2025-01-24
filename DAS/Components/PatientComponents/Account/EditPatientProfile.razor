@@ -161,6 +161,7 @@ else
 
 
     private int userId = -1; 
+    private string profileType = "non-user";
 
     private List<Profile> profileList = [];
     private List<Patient> patientList = [];
@@ -181,6 +182,7 @@ else
             if(foundUser != null )
             {
                 userId = foundUser.UserId;
+                profileType = foundUser.Type;
             }
             else
             {
