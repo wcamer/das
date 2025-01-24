@@ -16,6 +16,8 @@ builder.Services.AddScoped<AppState>();
 
 //This is for password hashing
 builder.Services.AddScoped<IPasswordHasher<Profile>, PasswordHasher<Profile>>();
+builder.Services.AddScoped<IPasswordHasher<ServiceProviders>, PasswordHasher<ServiceProviders>>();
+
 
 //Adds the UserService to be discovered globally
 builder.Services.AddScoped<UserService>();
