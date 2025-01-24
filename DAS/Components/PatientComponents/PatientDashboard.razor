@@ -7,7 +7,7 @@
 <PageTitle>Patient Dashboard</PageTitle>
 
 <h2>Patient Dashboard</h2>
-@if(userId <= 0)
+@if(userId <= 0 || profileType != "Patient")
 {
     <p>-------- Please login to view --------</p>
 }
@@ -44,7 +44,7 @@ else
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/editProfile">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit Account
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit Profile
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -204,6 +204,8 @@ else
 @code{
 
     public int userId = -1;
+    private string profileType = "Non-user";
+
     private bool signOutWindow = false;
     //private bool signOutSuccess = false;
     private bool isDisabled = false;
@@ -220,6 +222,7 @@ else
             if (foundUser != null)
             {
                 userId = foundUser.UserId;
+                profileType = foundUser.Type;
                 Console.WriteLine($"*****************updated userId:{userId}");
                 StateHasChanged();
             }
