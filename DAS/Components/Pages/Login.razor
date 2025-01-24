@@ -1,12 +1,15 @@
 @page "/login"
+@using DAS.Components
 @inject AuthService AuthService
 @inject UserService UserService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
+<h1>Login Portal</h1>
+<LoginForm />
 
 
-<EditForm Model="loginModel" OnValidSubmit="@(Authenticate)" FormName="PatientLoginForm">
+@* <EditForm Model="loginModel" OnValidSubmit="@(Authenticate)" FormName="PatientLoginForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -22,12 +25,12 @@
 
 
     <button type="submit">Login</button>
-</EditForm>
+</EditForm> *@
 
 
 
 @code {
-    public class LoginModel
+    @* public class LoginModel
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
@@ -79,10 +82,9 @@
             message = "";
             //re-enable the login form to try again
             isFormDisabled = false;
-            @* Console.WriteLine($"*****************UserService.CurrentUser.userid:{UserService.CurrentUser}"); *@
 
             errorMessage = "Login failed. Please check credentials and try again";
         }
-    }
+    }// End of Authenticate function *@
 
 }
