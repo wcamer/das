@@ -1,0 +1,81 @@
+@using System.Collections.Generic
+@inject NavigationManager NavigationManager
+
+<div>
+    <h3>Available Appointments</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Available Slots</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var slot in AvailableSlots)
+            {
+                <tr>
+                    <td>@slot.Time</td>
+                    <td>@slot.AvailableCount</td>
+                    <td>
+                        @if (slot.AvailableCount > 0)
+                        {
+                            <button class="btn btn-primary" @onclick="() => TakeAppointment(slot.Time)">Take
+                                Appointment</button>
+                        }
+                        else
+                        {
+                            <span>No Slots Available</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    public class AppointmentSlot
+    {
+        public string Time { get; set; }
+        public int AvailableCount { get; set; }
+    }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = false; // Optional: Disable booking for non-users
+
+    private List<AppointmentSlot> AvailableSlots { get; set; } = new List<AppointmentSlot>();
+
+    protected override void OnInitialized()
+    {
+        InitializeSlots();
+    }
+
+    private void InitializeSlots()
+    {
+        // Generate hourly slots from 12 AM to 11 PM
+        for (int hour = 0; hour < 24; hour++)
+        {
+            string time = DateTime.Today.AddHours(hour).ToString("hh tt");
+            AvailableSlots.Add(new AppointmentSlot { Time = time, AvailableCount = 2 }); // Max 2 slots per hour
+        }
+    }
+
+    private void TakeAppointment(string time)
+    {
+        if (IsReadOnly)
+        {
+            return; // Disable appointment booking for read-only mode
+        }
+
+        var slot = AvailableSlots.FirstOrDefault(s => s.Time == time);
+        if (slot != null && slot.AvailableCount > 0)
+        {
+            slot.AvailableCount--; // Reduce available slots
+            StateHasChanged(); // Refresh UI
+
+            // Redirect to the Create Appointment form, passing the selected time as a query parameter
+            NavigationManager.NavigateTo($"/createappointment?time={time}");
+        }
+    }
+}

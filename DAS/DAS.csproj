@@ -10,6 +10,10 @@
     <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.sqlite" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.sqlserver" Version="9.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
