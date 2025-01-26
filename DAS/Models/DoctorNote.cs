@@ -5,10 +5,12 @@ namespace DAS.Models;
 
 public class DoctorNote
 {
-    public required int DoctorNoteId { get; set; }
+    public int DoctorNoteId { get; set; }
 
     [DataType(DataType.Date)]
     public required DateTime Date { get; set; }
+
+    public DateTime? LastUpdatedDate { get; set; }
 
     public required int PatientId { get; set; }
 
@@ -26,8 +28,10 @@ public class DoctorNote
     [Required]
     public required string DoctorName { get; set; }
 
-    [RegularExpression(@"^[a-zA-Z0-9\s]*$",
-    ErrorMessage = "Note contents must only contain letters and numbers, have a min length of 2, and a max length of 1000")]
+
+
+    [RegularExpression(@"^[a-zA-Z0-9\s.,!?;:'""()\-]*$",
+    ErrorMessage = "Note contents must only contain letters, symbols and numbers, have a min length of 2, and a max length of 1000")]
     [Required]
     [StringLength(1000, MinimumLength = 2)]
     public required string Note { get; set; }
