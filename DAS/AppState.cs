@@ -559,7 +559,76 @@ public class AppState
 
 
 
+    //  ------------------------Service Providers Funtions Section--------------
 
+
+
+    public async Task<bool> CreateNewDoctorNote(int docId, DoctorNote dn)
+    {
+        try
+        {
+            //makes sure that the docId is a service provider
+            var foundSP = await _dbContext.ServiceProviders.FirstOrDefaultAsync(s => s.ServiceProvidersId == docId);
+            if (foundSP != null)
+            {
+                //makes sure the found service provider is a doctor
+                if (foundSP.Type == "Doctor")
+                {
+                    //adds to the DoctorNote table
+                    _dbContext.DoctorNote.Add(dn);
+                    //save the changes and syncs
+                    await _dbContext.SaveChangesAsync();
+                    //add to the patients list
+                    DoctorNotes.Add(dn);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> EditDoctorNote(int DoctorNoteId, int userId, DoctorNote editedNote)
+    {
+        var foundNote = await _dbContext.DoctorNote.FirstOrDefaultAsync(d => d.DoctorNoteId == DoctorNoteId && d.DoctorId == userId);
+        if (foundNote != null)
+        {
+            foundNote.LastUpdatedDate = DateTime.Now;
+            foundNote.Note = editedNote.Note;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public async Task<bool> DeleteDoctorNote(int DoctorNoteId, int userId)
+    {
+        var foundNote = await _dbContext.DoctorNote.FindAsync(DoctorNoteId);
+        if (foundNote != null && foundNote.DoctorId == userId)
+        {
+            _dbContext.DoctorNote.Remove(foundNote);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
 
 

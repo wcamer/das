@@ -1,13 +1,66 @@
 @page "/Dashboard"
 @using DAS.Components.PatientComponents
+@rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>This will be the Dashboard page. Depending on who is logged in</h1>
+@* <h1>This will be the Dashboard page. Depending on who is logged in</h1> *@
 
-<h2>User</h2>
-<PatientDashboard />
+@if (userId <= 0 && (profileType != "Doctor" && profileType != "Associate" && profileType != "Patient" && profileType !=
+"Admin"))
+{
+    <p>Please login</p>
+}
+
+else
+{
+    <h1>@profileType Dashboard</h1>
+    @if (profileType == "Patient")
+    {
+        @* <h2>User</h2> *@
+        <PatientDashboard />
+    }
+    else if (profileType == "Associate" || profileType == "Doctor")
+    {
+        <p>You are a @profileType</p>
+    }
+    else if (profileType == "Admin")
+    {
+        <p>You are an admin</p>
+    }
+    else
+    {
+        <p>You are a valid user but You don't have a view</p>
+    }
+}
+
+
 
 @* <h2>Associate</h2>
 
 <h2>Doctor</h2> *@
+
+
+@code {
+    private int userId = -1;
+    private string profileType = "Non-user";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var foundUser = await UserService.GetLoggedInUser();
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+                profileType = foundUser.Type;
+                Console.WriteLine($"-------------{userId} ----{foundUser.UserId}-----{profileType}-----{foundUser.Type}");
+                StateHasChanged();
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}
