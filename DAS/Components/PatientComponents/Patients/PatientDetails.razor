@@ -1,0 +1,311 @@
+@page "/patient-details/{PatientId:int}"
+@using DAS.Models
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<h1>Patient Details</h1>
+@if (userId <= 0 && (profileType != "Doctor" || profileType != "Patient"))
+{
+    <p>Access Denied</p>
+}
+else
+{
+    <div>
+        <p>Name: @patient.FirstName @patient.LastName</p>
+    </div>
+    @if (profileType == "Doctor")
+    {
+        <div>
+            <button @onclick="@(() => {
+                isFormDisabled = false;
+                createFlag = true;
+                message = "Create a new doctor note and click submit to save and create or cancel to stop.";
+                })"
+                disabled="@createFlag">
+                Create New Note
+            </button>
+        </div>
+        @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert alert-info">@message</div>
+            }
+        @if(createFlag == true)
+        {
+            
+            <div>
+                <label>Create New Doctor Note:</label>
+                <EditForm Model="@newNote" FormName="CreateDoctorNoteForm" disabled="@isFormDisabled">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div>
+                        <InputTextArea @bind-value="newNote.Note" disabled="@isFormDisabled" rows="10" cols="50" placeholder="Enter a new note here" />
+                        <ValidationMessage For="@(() => newNote.Note)" />
+                            
+                    </div>
+                    <div>
+                        <button @onclick="HandleValidSubmit" disabled="@disableCreateButton">Submit</button>
+                        <button @onclick="@(() => { 
+                            CreateNoteCancel();
+                        })" disabled="@isFormDisabled">Cancel</button>
+                    </div>
+                            
+                            
+                </EditForm>
+            </div>
+            
+        }
+
+
+    }
+
+    <div>
+        <h2>Doctor Notes</h2>
+        <div>
+            @foreach (var note in docNotes)
+            {
+                if (note.PatientId == PatientId)
+                {
+                    var doctorNoteDetailedRoute = $"/DoctorNoteDetailed/{note.DoctorNoteId}";
+                    <div>
+                        <div>
+                            <p>@note.DoctorName</p>
+                            <p>@note.Date.ToString("MM/dd/yyyy")</p>
+                            <div>
+                                <button>
+                                    <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> View
+                                    </NavLink>
+                                </button>
+                                @if (profileType == "Doctor" && userId == note.DoctorId)
+                                {
+                                    @* var doctorNoteEditRoute = $"/DoctorNoteEdit{note.DoctorNoteId}"; *@
+                                    <button>
+                                        @* <NavLink class="nav-link" href=@doctorNoteEditRoute> *@
+                                        <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
+
+                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                        </NavLink>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        
+
+
+                    </div>
+                }
+
+            }@* end of foreach block *@
+        </div>
+    </div>
+
+
+
+}
+
+
+
+@code {
+    [Parameter]
+    public int PatientId { get; set; }
+    private int userId = -1;
+    private string profileType = "Non-user";
+
+    private bool createFlag = false;
+
+    private bool isFormDisabled = false;
+
+    private bool disableCreateButton = false;
+    private string? message;
+
+    //This will hold the newly created note info
+    private DoctorNote newNote = new DoctorNote
+    {
+            DoctorId = -1, // this will change to the logged in doctor
+            //DoctorNoteId = -1, // this will be auto generated
+            PatientId = -1, // this will be the patient in question
+            Date = DateTime.Now,
+            LastUpdatedDate = DateTime.Now,
+            PatientName = "Patient",
+            DoctorName = "Doctor",
+            Note = string.Empty
+    };
+
+
+    //This will be to reset the note for the next note creation
+    private DoctorNote blankNote = new DoctorNote
+    {
+         DoctorId = -1, // this will change to the logged in doctor
+            //DoctorNoteId = -1, // this will be auto generated
+            PatientId = -1, // this will be the patient in question
+            Date = DateTime.Now,
+            LastUpdatedDate = DateTime.Now,
+            PatientName = string.Empty,
+            DoctorName = string.Empty,
+            Note = string.Empty
+    };
+
+
+    private Patient patient = new Patient
+        {
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            ProfileId = -1,
+
+        };
+
+    private List<DoctorNote> docNotes = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var foundUser = await UserService.GetLoggedInUser();
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+                profileType = foundUser.Type;
+                @* StateHasChanged(); *@
+            }
+            else
+            {
+                return;
+            }
+
+            await AppState.LoadListsAsync();
+            docNotes = AppState.DoctorNotes;
+            @* StateHasChanged(); *@
+            Console.WriteLine($"-----------userId {userId} and founduser.userid {foundUser.UserId} ");
+            Console.WriteLine($"-----------profiletype {profileType} and founduser.profileType {foundUser.Type} ");
+
+
+
+            var foundPatient = await AppState.GetPatientById(PatientId, foundUser.UserId);
+            if (foundPatient != null)
+            {
+                Console.WriteLine($"-----------foundpatientid/fname/lname{foundPatient.PatientId} {foundPatient.FirstName} {foundPatient.LastName} ");
+
+
+                patient = new Patient
+                    {
+                        PatientId = foundPatient.PatientId,
+                        FirstName = foundPatient.FirstName,
+                        LastName = foundPatient.LastName,
+
+                    };
+
+                
+                Console.WriteLine($"-----------patientid/fname/lname{patient.PatientId} {patient.FirstName} {patient.LastName} ");
+
+
+
+                StateHasChanged();
+
+            }
+            //if the logged in user is a doctor
+            else 
+            {
+                var userIsDoctor = AppState.ServiceProviders.FirstOrDefault(d => d.ServiceProvidersId == userId && d.Type == profileType);
+                if (userIsDoctor != null)
+                {
+                     //Console.WriteLine($"-----------foundpatientid/fname/lname{foundPatient.PatientId} {foundPatient.FirstName} {foundPatient.LastName} ");
+                    foundPatient = AppState.Patients.FirstOrDefault(p => p.PatientId == PatientId);
+                    if(foundPatient != null)
+                    {
+                        patient = new Patient
+                        {
+                            PatientId = foundPatient.PatientId,
+                            FirstName = foundPatient.FirstName,
+                            LastName = foundPatient.LastName,
+
+                        };
+
+                        //insert data to prep a new note
+                        newNote.DoctorId = userIsDoctor.ServiceProvidersId;
+                        newNote.DoctorName = $"{userIsDoctor.FirstName} {userIsDoctor.LastName}";
+                        newNote.PatientId = foundPatient.PatientId;
+                        newNote.PatientName = $"{foundPatient.FirstName} {foundPatient.LastName}";
+
+
+                        //Console.WriteLine($"-----------patientid/fname/lname{patient.PatientId} {patient.FirstName} {patient.LastName} ");
+
+
+
+                        StateHasChanged();
+                    }
+
+                    
+
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+
+        }// end of if(firstRender) condition
+        @* StateHasChanged(); *@
+
+    }
+
+    private void CreateNoteCancel()
+    {
+        newNote.Note = blankNote.Note;
+        createFlag = false;
+        message = string.Empty;
+        isFormDisabled = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+
+        await SubmitNewDoctorNote(newNote, userId);
+        @* StateHasChanged(); *@
+    }
+
+    private async Task SubmitNewDoctorNote(DoctorNote dn, int docId)
+    {
+        isFormDisabled = true;
+        message ="";
+
+        var newNoteToDb = await AppState.CreateNewDoctorNote(docId, dn);
+
+        if(newNoteToDb == true)
+        {
+            message = $"New Doctor Note created successfully";
+            newNote = new DoctorNote
+            {
+                DoctorId = docId,
+                DoctorName = dn.DoctorName,
+                PatientId = PatientId,
+                PatientName = dn.PatientName,
+                Date = DateTime.Now,
+                LastUpdatedDate = DateTime.Now,
+                Note = string.Empty
+            };
+            
+            
+            StateHasChanged();
+
+            createFlag = false;
+            
+
+        }
+        else
+        {
+            message = "Something went wrong.  Note creation canceled";
+        }
+        isFormDisabled = false;
+    }
+
+
+
+
+
+
+
+
+
+
+}@* End of @code block *@
