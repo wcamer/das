@@ -1,0 +1,315 @@
+@page "/DoctorNoteDetailed/{DoctorNoteId:int}"
+@using DAS.Models
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@if (userId <= 0 && (profileType != "Doctor" || profileType != "Patient"))
+{
+    <p>Access Denied</p>
+}
+else 
+{
+    <h1>Doctor Note Detailed</h1>
+    <div>
+        <h2>Note Information</h2>
+        <p>Original Note Date: @note.Date.ToString("MM/dd/yyyy")</p>
+        @if (note.LastUpdatedDate != null)
+        {
+            <p>Last Updated: @note.LastUpdatedDate.Value.ToString("MM/dd/yyyy")</p>
+        }
+
+
+        <p>Patient: @note.PatientName</p>
+        <p>Note By: @note.DoctorName</p>
+    </div>
+    @if (profileType == "Doctor")
+    {
+        @if (note.DoctorId == userId)
+        {
+            <div>
+                <h3>Options</h3>
+                <div>
+                    <!-- Edit Button -->
+                    <button @onclick="@(() => {
+                        deleteWarningFlag = false; 
+                        editWarningFlag = true; 
+                        disableDeleteButton = true;
+                        disableEditButton = false;
+                        message = editWarningMessage;
+                        isFormDisabled = false; // Enable form for editing
+                       originalNote.Note = note.Note; // this helps with form reset
+                    })" 
+                    disabled="@editWarningFlag">
+                        Edit
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button @onclick="@(() => {
+                        deleteWarningFlag = true; 
+                        editWarningFlag = false; 
+                        disableDeleteButton = false;
+                        disableEditButton = true;
+                        message = deleteWarningMessage;
+                        isFormDisabled = true; // Disable form for deletion
+                    })" 
+                    disabled="@deleteWarningFlag">
+                        Delete
+                    </button>
+                </div>
+
+                
+                    
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                        <div class="alert alert-info">@message</div>
+                    }
+
+                    <!-- Delete Confirmation -->
+                    @if (deleteWarningFlag)
+                    {
+                        <div>
+                            <button @onclick="ProcessDeleteDoctorNote" disabled="@disableDeleteButton">Yes</button>
+                            <button @onclick="@(() => { 
+                                deleteWarningFlag = false; 
+                                message = string.Empty; 
+                            })">No</button>
+                            <h4>Note Details</h4>
+                            <p>@note.Note</p>
+                        </div>
+                        
+                        <div>
+                            
+                            @* <button @onclick="ProcessDeleteDoctorNote" disabled="@disableDeleteButton">Yes</button>
+                            <button @onclick="@(() => { 
+                                deleteWarningFlag = false; 
+                                message = string.Empty; 
+                            })">No</button> *@
+                            @* <p>Are you sure you want to delete this Doctor Note?</p> *@
+                        </div>
+                    }
+
+                    <!-- Edit Confirmation -->
+                    @if (editWarningFlag)
+                    {
+                        <div>
+                            <label>Note Details:</label>
+                            <!-- Form for Editing or Confirming Deletion -->
+                            <EditForm Model="@note" FormName="DoctorNoteEditForm" disabled="@deleteWarningFlag">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div>
+                                    <InputTextArea @bind-value="note.Note" disabled="@isFormDisabled" rows="10" cols="50" />
+                                    <ValidationMessage For="@(() => note.Note)" />
+                                        
+                                </div>
+                                <div>
+                                    <button @onclick="HandleValidSubmit" disabled="@disableEditButton">Submit</button>
+                                    <button @onclick="@(() => { 
+                                        EditCancel();
+                                    })" disabled="@isFormDisabled">Cancel</button>
+                                </div>
+                                        
+                                        
+                            </EditForm>
+                        </div>
+                        
+                    }
+
+                    @if(editWarningFlag == false && deleteWarningFlag == false)
+                    {
+                        <h4>Note Details</h4>
+                        <p>@note.Note</p>
+                    }
+                
+            </div>
+        }
+        else 
+        {
+            <div>
+                <h3>Note Details:</h3>
+                <p>@note.Note</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div>
+            <h3>Note Details:</h3>
+            <p>@note.Note</p>
+        </div>
+    }
+
+
+
+
+
+
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int DoctorNoteId { get; set; }
+    private int userId = -1;
+
+    private int patientIdDetails;
+    private string profileType = "Non-user";
+    private List<DoctorNote> notes = [];
+
+    
+    private string? message;
+    
+    bool deleteWarningFlag = false;
+    bool editWarningFlag = false;
+    
+    //This is a flag to disable the form if the appointment is deleted
+    bool isFormDisabled = false;
+    bool disableDeleteButton = false;
+    bool disableEditButton = false;
+
+    private string deleteWarningMessage = $"Are you sure you want to delete this Doctor Note? (If you click yes, this will permanently delete it)";
+    private string editWarningMessage = "Are you sure you want to submit this edit?  The edit is not able to be reversed once submitted. (Click Submit if you wish to complete this permanent edit.)";
+
+    //This will be used to put the editForm back to it's original state if an edit is canceled
+
+    private DoctorNote originalNote = new DoctorNote
+    {
+            DoctorId = -1,
+            DoctorNoteId = -1,
+            PatientId = -1,
+            Date = DateTime.Now,
+            LastUpdatedDate = DateTime.Now,
+            PatientName = string.Empty,
+            DoctorName = string.Empty,
+            Note = string.Empty
+    };
+
+    private DoctorNote note = new DoctorNote
+        {
+            DoctorId = -1,
+            DoctorNoteId = -1,
+            PatientId = -1,
+            Date = DateTime.Now,
+            LastUpdatedDate = DateTime.Now,
+            PatientName = string.Empty,
+            DoctorName = string.Empty,
+            Note = string.Empty
+        };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var foundUser = await UserService.GetLoggedInUser();
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+                profileType = foundUser.Type;
+                Console.WriteLine($"-------------{userId} ----{foundUser.UserId}-----{profileType}-----{foundUser.Type}");
+                StateHasChanged();
+            }
+            else
+            {
+                return;
+            }
+            await AppState.LoadListsAsync();
+            notes = AppState.DoctorNotes;
+
+
+
+
+
+            var foundNote = notes.FirstOrDefault(dn => dn.DoctorNoteId == DoctorNoteId);
+            if (foundNote != null)
+            {
+                patientIdDetails = foundNote.PatientId;
+                note = foundNote;
+                originalNote.Note = foundNote.Note;
+                StateHasChanged();
+
+                return;
+            }
+
+        }//end of firstRender condition
+    }// end of OnAfterRenderAsync
+
+
+    //Used to cancel the edit to reset it back to what it was originally
+    private void EditCancel()
+    {
+        note.Note = originalNote.Note;
+        editWarningFlag = false;
+        message = string.Empty;
+        isFormDisabled = true;
+    }
+    
+    private async Task HandleValidSubmit()
+    {
+        await SubmitEditDoctorNote(note);
+    }
+
+    private async Task SubmitEditDoctorNote(DoctorNote editedDoctorNote)
+    {
+        isFormDisabled = true;
+        message ="";
+
+        var selectedDoctorNote = notes.FirstOrDefault(n => n.DoctorNoteId == editedDoctorNote.DoctorNoteId);
+
+        if(selectedDoctorNote != null)
+        {
+            var editedDoctorNoteToDB = await AppState.EditDoctorNote(DoctorNoteId, userId, editedDoctorNote);
+
+            if(editedDoctorNoteToDB == true)
+            {
+                StateHasChanged();
+                message = $"Doctor Note has been successfully updated";
+                originalNote.Note = note.Note;
+                editWarningFlag = false;
+                
+            }
+            else
+            {
+                message =$"Something went wrong. Update canceled";
+                
+            }
+
+            isFormDisabled = false;
+        }
+        else
+        {
+            message = "Something went wrong. Unable to locate note to update. Update Canceled.";
+            isFormDisabled = false;
+        }
+
+    }
+
+    private async Task ProcessDeleteDoctorNote()
+    {
+        message = null; 
+        isFormDisabled = true;
+        var doctorNoteDeleted = await AppState.DeleteDoctorNote(note.DoctorNoteId, userId);
+
+        if(doctorNoteDeleted == true)
+        {
+            message = "Doctor Note successfully deleted.";
+            
+            originalNote.Note = "";
+            NavigationManager.NavigateTo($"/patient-details/{patientIdDetails}");
+            @* editWarningFlag = true; *@
+            
+        }
+        else
+        {
+            message = "Something went wrong.  Deletion aborted";
+            isFormDisabled = false;
+        }
+
+    }
+
+
+
+
+}
