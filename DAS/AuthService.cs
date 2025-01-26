@@ -21,6 +21,7 @@ public class AuthService
         var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p => p.Email == email);
         if (profile == null)
         {
+            //checking if the credentials return a service provider profile by email
             var serviceProviderProfile = await _dbContext.ServiceProviders.FirstOrDefaultAsync(sp => sp.Email == email);
             if (serviceProviderProfile != null)
             {
@@ -38,6 +39,7 @@ public class AuthService
 
                     Console.WriteLine($"--------------spresult----------{sPResult} has failedddddddd");
                     Console.WriteLine($"--------checking plaintext----------------");
+                    // this will check the credentials in case they are in plaintext 
                     var pTP = await _dbContext.ServiceProviders.FirstOrDefaultAsync(sp => sp.Email == email);
                     if (pTP != null)
                     {
@@ -59,6 +61,7 @@ public class AuthService
                 return null;
             }
         }
+        //found a patient profile
         else
         {
             // Verify password
@@ -76,8 +79,24 @@ public class AuthService
 
 
             }
+            else
+            {
+                //checking the password if it's in plain text
+                if (profile.Password == password)
+                {
+                    return new User
+                    {
+                        UserId = profile.ProfileId,
+                        Type = profile.Type ?? "Non-user"
+                    };
+                }
+                else
+                {
+                    return null;
+                }
+            }
 
-            return null;
+
         }
         // return null;
 
