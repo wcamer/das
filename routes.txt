@@ -23,3 +23,9 @@ This is a page to help keep track of what the existing routes are
 
 /login
     Landing page where a user will put in their email and password to gain access to the app
+
+/patient-details/{PatientId:int}
+    Landing page where only a patient or doctor can view a specific patient's details and see other notes left by other doctors
+
+/DoctorNoteDetailed/{DoctorNoteId:int}
+    Landing page for a specific Doctor note where if the Doctor who wrote the note can decide to delete or update it.  Other doctors can view the notes but not update other Doctor's notes
