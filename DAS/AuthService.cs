@@ -43,11 +43,19 @@ public class AuthService
                     var pTP = await _dbContext.ServiceProviders.FirstOrDefaultAsync(sp => sp.Email == email);
                     if (pTP != null)
                     {
-                        return new User
+                        if (pTP.Password == password)
                         {
-                            UserId = serviceProviderProfile.ServiceProvidersId,
-                            Type = serviceProviderProfile.Type ?? "Non-User"
-                        };
+                            return new User
+                            {
+                                UserId = serviceProviderProfile.ServiceProvidersId,
+                                Type = serviceProviderProfile.Type ?? "Non-User"
+                            };
+                        }
+                        else
+                        {
+                            return null;
+                        }
+
                     }
 
 
