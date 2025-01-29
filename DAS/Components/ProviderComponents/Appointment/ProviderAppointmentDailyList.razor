@@ -1,0 +1,96 @@
+@using DAS.Models
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+@if (DailyAppointments == null || !DailyAppointments.Any())
+{
+    <p>No appointments found for @SelectedDate.ToString("MM/dd/yyyy").</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Patient Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in DailyAppointments)
+            {
+                <tr>
+                    <td>@appt.Name</td>
+                    <td>@appt.Date.ToString("MM/dd/yyyy")</td>
+                    <td>@appt.Time</td>
+                    <td>@appt.Status</td>
+                    <td>
+                        @if (appt.Status != "Cancelled")
+                        {
+                            <button class="btn btn-warning btn-sm"
+                                @onclick="() => CancelAppointment(appt.AppointmentId)">Cancel</button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Cancelled</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public DateTime SelectedDate { get; set; }
+
+    private List<Appointment> allAppointments = new();
+    private List<Appointment> DailyAppointments = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Load the main lists from the DB (if not already loaded)
+        await AppState.LoadListsAsync();
+        allAppointments = AppState.OrderedAppointments;
+
+        // Filter for the selected date
+        DailyAppointments = allAppointments
+        .Where(a => a.Date.Date == SelectedDate.Date)
+        .OrderBy(a => DateTime.Parse(a.Time))
+        .ToList();
+    }
+
+    private async Task CancelAppointment(int appointmentId)
+    {
+        // Confirm cancellation with the provider
+        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to cancel this appointment?");
+        if (confirm)
+        {
+            // Call the existing DeletePatientAppointment method to delete the appointment
+            var success = await AppState.DeletePatientAppointment(appointmentId);
+            if (success)
+            {
+                // Reload appointments to reflect changes
+                await AppState.LoadListsAsync();
+                allAppointments = AppState.OrderedAppointments;
+                DailyAppointments = allAppointments
+                .Where(a => a.Date.Date == SelectedDate.Date)
+                .OrderBy(a => DateTime.Parse(a.Time))
+                .ToList();
+
+                // Notify the provider of successful cancellation
+                await JSRuntime.InvokeVoidAsync("alert", "Appointment cancelled successfully.");
+                StateHasChanged();
+            }
+            else
+            {
+                // Notify the provider of failure to cancel
+                await JSRuntime.InvokeVoidAsync("alert", "Failed to cancel the appointment. Please try again.");
+            }
+        }
+    }
+}
