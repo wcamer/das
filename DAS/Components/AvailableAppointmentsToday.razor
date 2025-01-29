@@ -1,0 +1,234 @@
+@using System.Collections.Generic
+@using DAS.Models
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+
+@if(profileType != "Admin")
+{
+    <div>
+        <h3>Available Appointments For: @targetDay</h3>
+        @* If there are any available slots... *@
+        @if (AvailableSlots.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Available Slots</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var slot in AvailableSlots)
+                    {
+                        //Potentially redundant but will test in the morning to see if it is.  If so then remove this condition
+                        @* @if (slot.AvailableCount > 0 && DateTime.TryParse(slot.Time, out var slotDateTime) &&
+                    slotDateTime.TimeOfDay > DateTime.Now.TimeOfDay) *@
+                    @if(slot.AvailableCount>0)
+                        {
+                            <tr>
+                                <td>@slot.Time</td>
+                                <td>@slot.AvailableCount</td>
+                                <td>
+                                    @* A conditional is needed to check if a user is patient, so then they can take the appointment.  If not then they are directed to login *@
+                                    @* @if (slot.AvailableCount > 0 && DateTime.TryParse(slot.Time, out var slotDateTime) &&
+                            slotDateTime.TimeOfDay > DateTime.Now.TimeOfDay) *@
+                                    @* { *@
+                                    @if(userId > 0 && (profileType == "Patient" || profileType == "Doctor" || profileType == "Associate"))
+                                    {
+                                        <button class="btn btn-primary" @onclick="() => TakeAppointment(slot.Time)">Take
+                                            Appointment
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        @* <button class="btn btn-primary" @onclick="() => SendToLogin()">
+                                            Login to schedule
+                                        </button> *@
+                                        
+                                        <button class="btn btn-primary" @onclick="@(() => { NavigationManager.NavigateTo("/login"); })" >Login To Schedule</button>
+
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @* else
+                        {
+                            <span>No Slots Available For Today</span>
+                        } *@
+
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>----- No more appointments will be accepted today. Please Check Back Tomorrow -----</p>
+        }
+    </div>
+
+}
+else
+{
+    <p>Hello, Admin</p>
+}
+
+
+
+@code {
+    public class AppointmentSlot
+    {
+        public string Time { get; set; } = string.Empty;
+        public int AvailableCount { get; set; }
+    }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = false; // Optional: Disable booking for non-users
+
+    private List<AppointmentSlot> AvailableSlots { get; set; } = new List<AppointmentSlot>();
+    private List<Appointment> appointments = new List<Appointment>();
+
+    private string? targetDay; //Gets the target day's date information
+
+    private TimeSpan? targetTime; //The time of a particular day
+    private int userId = -1;
+    private string profileType = "Non-User";
+
+
+
+
+
+    @* protected override void OnInitialized()
+    {
+        InitializeSlots();
+    } *@
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AppState.LoadListsAsync(); //Loads the appointment list in AppState
+        @* appointments = AppState.Appointments; *@
+        @* InitializeSlots(); *@
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                userId = foundUser.UserId;
+                profileType = foundUser.Type;
+                targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
+                targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
+                
+                InitializeSlots();
+                StateHasChanged();
+                
+            }
+            else
+            {
+                targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
+                targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
+                
+                InitializeSlots();
+                StateHasChanged();
+                return;
+            }
+        }
+    }
+
+    private void InitializeSlots()
+    {
+        @* // Generate hourly slots from 12 AM to 11 PM
+        for (int hour = 0; hour < 24; hour++)
+        {
+            string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+            AvailableSlots.Add(new AppointmentSlot { Time = time, AvailableCount = 2 }); // Max 2 slots per hour
+        } *@
+
+        @* var currentDay = DateTime.Today; *@
+        var currentTime = targetTime;
+        //empty list that will contain all the scheduled appointments for today
+        List<Appointment> todaysAppointments = new List<Appointment>();
+
+        //copying a list of the appointments that are scheduled for today
+        todaysAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") ==
+        targetDay).ToList();
+
+        //Console.WriteLine($"*********//////////////////////// time {targetTime} date {targetDay} ****** targetTime {currentTime}");
+
+
+        foreach(var i in todaysAppointments)
+        {
+           // Console.WriteLine($"********* time {i.Time} date {i.Date} ****** targetTime {currentTime}");
+           
+        }
+        // Generate hourly slots from 12 AM to 11 PM
+        for (int hour = 0; hour < 24; hour++)
+        {
+            //formats the time for available slot
+            string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+
+            //Console.WriteLine($"*********!!!!!!!!!!!!!!! --------------------time {time} ");
+
+
+            int numberOfScheduledAppointments = todaysAppointments.Count(a => a.Time == time);
+
+            //Console.WriteLine($"???????? --------------------# of appointments scheduled at time: {time} / {hour} is = {numberOfScheduledAppointments} ");
+
+
+            //checking if the number of scheduled appointments are less than 2 and the given hour is later than the current hour
+            if (numberOfScheduledAppointments < 2 && currentTime.HasValue && new TimeSpan(hour, 0, 0) > currentTime.Value)
+            @* if (numberOfScheduledAppointments < 2 ) *@
+            {
+                //adds the available time slot minus how many appointments that are already schedule for that slot if it is less than 2
+                AvailableSlots.Add(new AppointmentSlot { Time = time, AvailableCount = 2 - numberOfScheduledAppointments }); // Max 2 slots per hour
+                StateHasChanged();
+            }
+
+           
+
+
+        }
+
+    }
+
+    //Potentially not needed... 
+    private void TakeAppointment(string time)
+    {
+        if (IsReadOnly)
+        {
+            return; // Disable appointment booking for read-only mode
+        }
+
+        var slot = AvailableSlots.FirstOrDefault(s => s.Time == time);
+        if (slot != null && slot.AvailableCount > 0)
+        {
+            slot.AvailableCount--; // Reduce available slots
+            StateHasChanged(); // Refresh UI
+
+            // Redirect to the Create Appointment form, passing the selected time as a query parameter
+            if(profileType == "Patient")
+            {
+                NavigationManager.NavigateTo($"/createappointment?time={time}");
+
+            }
+            else if(profileType == "Doctor" || profileType == "Associate")
+            {
+                Console.WriteLine($"Profile Type is... {profileType}.  Waiting on SP appointment creation to be integrated");
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+}@* End of @code block *@
