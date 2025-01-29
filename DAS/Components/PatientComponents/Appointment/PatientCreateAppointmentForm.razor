@@ -16,6 +16,18 @@
 }
 else
 {
+    @* <h1>Currently newAppointment.Date = @newAppointment.Date.ToString("MM/dd/yyyy")</h1>
+    <h2>Changetrigger = @changeTrigger</h2> *@
+    @* <button @onclick="(() => GetAvailableSlots(newAppointment.Date) )">
+            Check Availability For: @newAppointment.Date.ToString("MM/dd/yyyy")
+    </button> *@
+    //changeTrigger will default to today's date and if they don't match then we will update the available slots for the new day and update changeTrigger's value
+    @if(changeTrigger != newAppointment.Date)
+    {
+        GetAvailableSlots();
+        changeTrigger = newAppointment.Date;
+
+    }
 
     <EditForm Model="@newAppointment" OnValidSubmit="@(CreatePatientAppointment)" FormName="PatientCreateAppointmentForm">
 
@@ -26,21 +38,23 @@ else
             <div class="alert alert-info">@message</div>
         }
 
-        @* <div>
-            <label>Name:</label>
-            <InputText @bind-Value="exAppoint.Appointment.Name"  />
-            <ValidationMessage For="@(() => appointment.Name)" />
-        </div> *@
 
         <div>
             <label>Date:</label>
-            <InputDate @bind-Value="newAppointment.Date" />
+            <InputDate @bind-Value="newAppointment.Date" min="@DateTime.Today.ToString("MM/dd/yyyy")"/>
             <ValidationMessage For="@(() => newAppointment.Date)" />
         </div>
+        
 
         <div>
-            <label>Time:</label>
-            <InputText @bind-Value="newAppointment.Time" />
+            <label>Available Time</label>
+            <InputSelect @bind-Value="newAppointment.Time">
+                @* ()= > GetAvailableSlots(newAppointment.Date) *@
+                @foreach(var s in AvailableSlots)
+                {
+                    <option value="@s.Time">@s.Time</option>
+                }
+            </InputSelect>
             <ValidationMessage For="@(() => newAppointment.Time)" />
         </div>
         <div>
@@ -70,9 +84,50 @@ else
 
         
     </EditForm>
+    
+    //dynamic visual aid to help see what times are available
+    <section>
+        <h2>Available Appointments On: @newAppointment.Date.ToString("MM/dd/yyyy")</h2>
+        @if(AvailableSlots.Count == 0)
+        {
+            <p>----- Please Select A Different Day -----</p>
+        }
+        else
+        {
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Available Slots</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        @foreach (var slot in AvailableSlots)
+                        {
+    
+                            @if(slot.AvailableCount>0)
+                            {
+                                <tr>
+                                    <td>@slot.Time</td>
+                                    <td>@slot.AvailableCount</td>
+                                </tr>
+                            }
+
+                            
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 }
 
 @code {
+
+    private DateTime changeTrigger = DateTime.Now;
 
     private List<Patient> patients = [];
     
@@ -82,7 +137,7 @@ else
         PatientId = -1, // default part to check to see if user is logged in or not
         Name = "FirstName LastName",
         Date = DateTime.Now,
-        Time = "7:00 PM",
+        Time = DateTime.Now.TimeOfDay.ToString(),
         Status = "Pending",
         AppointSetterId = -1 //default part of check to see if user is logged in
 
@@ -92,6 +147,23 @@ else
     private string? message;
 
     private int userId = -1;
+
+    private List<Appointment> appointmentList = [];
+
+
+    
+    //Creating appointment slots class
+    public class AppointmentSlot
+    {
+        public string Time { get; set; } = string.Empty;
+        public int AvailableCount { get; set; }
+    }
+    //This will hold the available slots for a particular day
+    private List<AppointmentSlot> AvailableSlots {get; set;} = new List<AppointmentSlot>();
+
+    private DateTime todayDate = DateTime.Today; // this will default to today
+    private TimeSpan targetTime = DateTime.Now.TimeOfDay; //Defaults to current time
+
     
 
     //protected override async Task OnInitializedAsync()
@@ -119,44 +191,66 @@ else
             //Loading up the lists from the DB
             await AppState.LoadListsAsync();
             patients = AppState.Patients; 
+            appointmentList = AppState.Appointments;
+            @* GetAvailableSlots(); *@
             StateHasChanged();
-            Console.WriteLine($">>>>>>>>>>> {userId} <-----");
+            
 
         }
         
 
-    }
+    } // end of OnAfterRenderAsync(bool firstRender)
 
-     
- 
-
-    
-   
-
-    @* private int currentYear = DateTime.Now.Year; *@
 
     private void HandleValidSubmit()
     {
-        message = $"Apointment successfully set for {newAppointment.Name} for {newAppointment.Date.ToString("MM-dd-yyyy")} at {newAppointment.Time}";
-    
+        message = $"Appointment successfully set for {newAppointment.Name} for {newAppointment.Date.ToString("MM-dd-yyyy")} at {newAppointment.Time}";
+        
         //send user back the the home page but can be changed to send back to customer's dashboard
         //NavigationManager.NavigateTo("/");
 
     }
 
-    //onInitializedAsync goes here if used
-
-    
-
-    // OnAFterRenderAsync goes here if used.
     
 
 
     private async Task CreatePatientAppointment()
     {
 
+
         // Implement creation logic here
 
+        //This is a check to make sure the appointment that is about to be created is valid
+        //If the appointment date is in the past
+        if(newAppointment.Date < todayDate)
+        {
+            message = "Please enter a date that is either present day or a future date";
+            return;
+        }
+        //if the appointment date is the same present day
+        else if(newAppointment.Date == todayDate)
+        {
+            var currentHour = DateTime.Now.Hour;
+            //reformating the appointment Time in preparation for comparison
+            if(DateTime.TryParse(newAppointment.Time, out DateTime nAT))
+            {
+                //if the converted appointment time is before or equal the current hour
+                if(nAT.Hour <= currentHour)
+                {
+                    message = "Please select an appointment slot that is at least the next hour from the current hour";
+                    return;
+                }
+            }
+            else 
+            {
+                message = "Appointment Creation Canceled. Invalid time format";
+            }
+
+        }// at this point it has been determined that the appointment's date is at least present day or later and in a future hour
+        
+        
+
+        //Setting who set the appointment equal to the logged in user's id
         newAppointment.AppointSetterId = userId;
 
         
@@ -169,7 +263,7 @@ else
             //This will assign the name who the appointment is for
             newAppointment.Name = $"{selectedPatient.FirstName} {selectedPatient.LastName}";
             
-            Console.WriteLine($"{newAppointment.AppointmentId} {newAppointment.Name} {newAppointment.AppointSetterId} {newAppointment.Time}!!!!!!!!!!!!");
+            //Console.WriteLine($"{newAppointment.AppointmentId} {newAppointment.Name} {newAppointment.AppointSetterId} {newAppointment.Time}!!!!!!!!!!!!");
             
             
             //This will generate a new appointment everytime this function is called making every appointment unique
@@ -183,7 +277,7 @@ else
                 AppointSetterId = newAppointment.AppointSetterId //default part of check to see if user is logged in
             };
 
-             Console.WriteLine($"{CreatedAppointment.AppointmentId} {CreatedAppointment.Name} {CreatedAppointment.AppointSetterId} {CreatedAppointment.Time} ********************");
+             //Console.WriteLine($"{CreatedAppointment.AppointmentId} {CreatedAppointment.Name} {CreatedAppointment.AppointSetterId} {CreatedAppointment.Time} ********************");
 
 
             var addNewAppointmentToDb = await AppState.AddAppointment(CreatedAppointment);
@@ -194,6 +288,7 @@ else
             if(addNewAppointmentToDb == true)
             {
                 //updates AppState to reflect changes
+                GetAvailableSlots(); //shows updated available slots
                 StateHasChanged();
                 
                 HandleValidSubmit();
@@ -202,18 +297,93 @@ else
             {
                 //error message will be displayed 
                 message = "Something went wrong.  Appointment Creation Canceled. Try again later or try scheduling an appointment for a different time and/or date";
-                Console.WriteLine(message);
+                return;
             }
         }
         //if there wasn't a valid patient selected it will display a specific error message
         else
         {
             message = "Please select a patient for an appointment";
+            return;
         }
         
 
 
     }// end of CreatePatientAppointment
+
+
+
+    private void GetAvailableSlots()
+    {
+        message ="";
+        AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
+
+        var currentDay = DateTime.Now;
+        
+        var chosenDay = newAppointment.Date;
+        List<Appointment> dayAppointments = new List<Appointment>();
+
+        //This is a check to ensure that no past appointments are able to be seen as available
+        //If the chosenDay is in the past compared to today...
+        if(chosenDay.Date < currentDay.Date)
+        {
+            message = "Please select today's date or a future date";
+            return;
+
+        }
+        // This will handle the same day appointments
+        else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
+        {
+            var currentTime = DateTime.Now.Hour;
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+
+                //Only will show relevant hours that are available same-day and not hours that have passed
+                if(numOfSchedAppoints < 2 && hour > currentTime)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+        //This will handle all future days
+        else
+        {
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+        
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+                @* Console.WriteLine($"???????? --------------------# of appointments scheduled at time: {time} / {hour} is = {numOfSchedAppoints} "); *@
+
+
+                if(numOfSchedAppoints < 2)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+
+
+
+    } // end of GetAvailableSlots function
+
+    
 
 
 
