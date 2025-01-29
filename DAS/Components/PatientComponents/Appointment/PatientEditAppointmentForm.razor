@@ -17,6 +17,14 @@
 }
 else
 {
+    //changeTrigger will default to today's date and if they don't match then we will update the available slots for the new day and update changeTrigger's value
+    @if(changeTrigger != appointment.Date)
+    {
+        GetAvailableSlots();
+        changeTrigger = appointment.Date;
+
+    }
+
     <EditForm Model="@appointment" FormName="PatientEditAppointmentForm" disabled="@deleteWarningFlag"> 
         <DataAnnotationsValidator />
         <ValidationSummary />
@@ -40,13 +48,25 @@ else
 
         <div>
             <label>Time:</label>
-            <input @bind-value="appointment.Time" disabled="@deleteWarningFlag" />
+            <InputSelect @bind-value="appointment.Time" disabled="@deleteWarningFlag">
+                @foreach(var slot in AvailableSlots)
+                {
+                    <option value="@slot.Time">@slot.Time</option>
+                }
+            </InputSelect>
             <ValidationMessage For="@(() => appointment.Time)" />
         </div>
 
         <div>
             <label>Appointment Set For:</label>
             <input value="@targetPatient" disabled />
+            
+        </div>
+
+        <div>
+           
+            <label>Current Appointment Time:</label>
+            <input value="@oldAppointment.Time"disabled/>
         </div>
 
         <div>
@@ -70,11 +90,70 @@ else
         <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
         <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
     </EditForm>
+
+    //dynamic visual aid to help see what times are available
+    <section>
+        <h2>Available Appointments On: @appointment.Date.ToString("MM/dd/yyyy")</h2>
+        @if(AvailableSlots.Count == 0)
+        {
+            <p>----- Please Select A Different Day -----</p>
+        }
+        else
+        {
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Available Slots</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        @foreach (var slot in AvailableSlots)
+                        {
+    
+                            @if(slot.AvailableCount>0)
+                            {
+                                <tr>
+                                    <td>@slot.Time</td>
+                                    <td>@slot.AvailableCount</td>
+                                </tr>
+                            }
+
+                            
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 }
 
 
 
 @code {
+
+    private DateTime changeTrigger = DateTime.Now;
+
+    //Creating appointment slots class
+    public class AppointmentSlot
+    {
+        public string Time { get; set; } = string.Empty;
+        public int AvailableCount { get; set; }
+    }
+
+    private List<AppointmentSlot> AvailableSlots {get; set;} = new List<AppointmentSlot>();
+
+    private DateTime todayDate = DateTime.Today; // this will default to today
+    @* private TimeSpan targetTime = DateTime.Now.TimeOfDay;  *@
+
+
+
+
+
+
     //Structure of the form
     private Appointment appointment = new Appointment
     {
@@ -218,6 +297,7 @@ else
             if(editedAppointmentToDb == true)
             {
                 //updates AppState to reflect changes
+                GetAvailableSlots();
                 StateHasChanged();
                 
                 @* await HandleValidSubmit(); *@
@@ -234,6 +314,7 @@ else
                 };
 
                 targetPatient = editedAppointment.Name;
+
             }
             else
             {
@@ -281,6 +362,78 @@ else
 
 
     }// end of ProcessDeletePatientAppointment
+
+
+    private void GetAvailableSlots()
+    {
+        message ="";
+        AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
+
+        var currentDay = DateTime.Now;
+        
+        var chosenDay = appointment.Date;
+        List<Appointment> dayAppointments = new List<Appointment>();
+
+        //This is a check to ensure that no past appointments are able to be seen as available
+        //If the chosenDay is in the past compared to today...
+        if(chosenDay.Date < currentDay.Date)
+        {
+            message = "Please select today's date or a future date";
+            return;
+
+        }
+        // This will handle the same day appointments
+        else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
+        {
+            var currentTime = DateTime.Now.Hour;
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+
+                //Only will show relevant hours that are available same-day and not hours that have passed
+                if(numOfSchedAppoints < 2 && hour > currentTime)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+        //This will handle all future days
+        else
+        {
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+        
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+                @* Console.WriteLine($"???????? --------------------# of appointments scheduled at time: {time} / {hour} is = {numOfSchedAppoints} "); *@
+
+
+                if(numOfSchedAppoints < 2)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+
+
+
+    } // end of GetAvailableSlots function
+
 
 
 
