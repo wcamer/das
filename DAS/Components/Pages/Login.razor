@@ -1,5 +1,6 @@
-@page "/login"
+@page "/"
 @using DAS.Components
+@using DAS.Components.PatientComponents.Account
 @inject AuthService AuthService
 @inject UserService UserService
 @inject NavigationManager NavigationManager
@@ -8,7 +9,9 @@
 <PageTitle>Login Portal</PageTitle>
 
 <h1>Login Portal</h1>
+
 <LoginForm />
+
 
 
 @* <EditForm Model="loginModel" OnValidSubmit="@(Authenticate)" FormName="PatientLoginForm">
