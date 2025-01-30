@@ -1,0 +1,103 @@
+@using DAS.Models
+@inject AppState AppState
+@rendermode InteractiveServer
+
+
+@if (userId <= 0)
+{
+    <p>--------- Login to view Information ----------</p>
+}
+else
+{
+    <div>
+        <h2>Account Information</h2>
+        <div>
+            <div>
+                <span>Name: @(profile.FirstName + " " + profile.LastName)</span>
+            </div>
+
+            <div>
+            <span>Account Type: @profile.Type</span>
+            </div>
+
+            <div>
+                <span>Email: @profile.Email</span>
+            </div>
+            <div>
+                <span>ServiceProviderID: @profile.ServiceProvidersId</span>
+            </div>
+
+        </div>
+    </div>
+}
+
+
+@code
+{
+
+    private ServiceProviders profile = new ServiceProviders
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        Email = string.Empty, 
+        Password = string.Empty, 
+        ServiceProvidersId = -2,
+        Type = string.Empty
+    };
+
+    private int userId = -1;
+
+    @* protected override async Task OnInitializedAsync() *@
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || userId <= 0)
+        {
+            await AppState.LoadListsAsync();
+            @* StateHasChanged(); *@
+
+
+            //hardcoded test user Albert Wesker ProfileId 1
+            //Another acceptable test user Cloud Strife profileID 3
+            //userId = 1;
+
+            //Note: Change this to a disposable profile above 5 (if it exists already)
+            //userId = 8;
+
+            var foundUser = await UserService.GetLoggedInUser();
+
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+                @* StateHasChanged(); *@
+            }
+            else
+            {
+                return;
+            }
+
+            Console.WriteLine($"*****************updated userId:{userId}");
+
+
+            @* await AppState.LoadListsAsync();
+            StateHasChanged(); *@
+
+            //This will be used to get the user's profile based on their profileId provided to the userId variable
+            var userProfileData = await AppState.GetServiceProviderById(userId);
+
+
+            //This will make sure the user's profile is found
+            if (userProfileData != null)
+            {
+                profile.ServiceProvidersId = userProfileData.ServiceProvidersId;
+                profile.FirstName = userProfileData.FirstName;
+                profile.LastName = userProfileData.LastName;
+                profile.Email = userProfileData.Email;
+                profile.Type = userProfileData.Type;
+                Console.WriteLine($">>>>>>>>>>>>profileName {profile.FirstName} <-----");
+
+                StateHasChanged();
+            }
+
+        }// end of firstRender conditional
+    }
+}

@@ -633,6 +633,28 @@ public class AppState
         }
     }
 
+        //This will return a service provider based on a given user's id for security
+    public async Task<ServiceProviders?> GetServiceProviderById(int userId)
+    {
+        try
+        {
+            var serviceProvider = await _dbContext.ServiceProviders.SingleOrDefaultAsync(p => p.ServiceProvidersId == userId);
+            if (serviceProvider == null)
+            {
+                return null;
+            }
+            else
+            {
+                return serviceProvider;
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+    }
+
 
 
 

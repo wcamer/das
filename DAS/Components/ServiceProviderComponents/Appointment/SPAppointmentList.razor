@@ -1,0 +1,184 @@
+@using Microsoft.EntityFrameworkCore
+@using DAS.Models
+@using System.Linq
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+@inject UserService UserService
+@inject AuthService AuthService
+
+<div>
+    @if (userId <= 0)
+    {
+        <p>-------- Login to view information --------</p>
+    }
+    else
+    {
+        <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
+            @(ShowAppointments ? "Hide Appointments" : "Show Appointments")
+        </button>
+        @if(ShowAppointments)
+        {
+
+            @if (appointments.Any())
+            {
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Name <input @bind="SearchName" placeholder="Search by Name">
+                            </th>
+                            <th>
+                                Appointment Date
+                                <select @bind="SearchDate">
+                                    <option value="">All Dates</option> 
+                                    <option value="@DateTime.Today.ToString("MM/dd/yyyy")">Today's Date</option>
+                                    @foreach (var date in appointments.Select(a => a.Date.ToString("MM/dd/yyyy")).Distinct())
+                                    {
+                                        <option value="@date">@date</option>
+                                    } 
+                                </select>
+                            </th>
+                            <th>
+                                Time
+                            </th>
+                            <th>
+                                Status 
+                                <select @bind="SearchStatus">
+                                    <option value="">Search by Status</option> 
+                                    @foreach (var status in appointments.Select(a => a.Status).Distinct())
+                                    {
+                                        <option value="@status">@status</option>
+                                    } 
+                                </select>
+                            </th>
+                            <th></th>
+                            @* this is for testing *@
+                            <th>Appointment Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @* Here the logic will go "for each appointment in appointments display the following: 
+                                    Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
+
+                        @if (appointments.Any())
+                        {
+                            @foreach (var appointment in FilteredAppointments)
+                            {
+                                    var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
+
+                                    <tr>
+                                        <td>
+                                            @(appointment.Name)
+                                        </td>
+                                        <td>
+                                            @(appointment.Date.ToString("MM/dd/yyyy"))
+                                        </td>
+                                        <td>
+                                            @(appointment.Time)
+                                        </td>
+
+                                        <td>
+                                            @(appointment.Status)
+                                        </td>
+                                        @* The edit and delete options will depend on what the status is.  
+                                                If it's pending, then edit and delete will be displayed, 
+                                                else then it will show a message that it isn't changeable  *@
+                                        @*  hardcooded for Albert wesker*@
+
+                                        <td>
+                                            <button>
+                                                @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
+                                                <NavLink class="nav-link" href=@editRoute>
+                                                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                                </NavLink>
+                                            </button>
+                                            @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
+                                            @* <a value =@AppState.editAppointmentTarget></a> *@
+                                            @* <a asp-action="Edit">Edit</a> *@
+                                            @* <a asp-action="Delete">Delete</a> | *@
+                                            @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
+                                        </td>
+                                        @* for dev testing *@
+                                        <td>
+                                            @(appointment.AppointmentId)
+                                        </td>
+
+                                    </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>-------- No Appointments Scheduled ---------</p>
+            }
+        }
+
+    }
+
+</div>
+
+@code {
+
+    private bool ShowAppointments = false; // Controls visibility
+
+    private void ToggleAppointments()
+    {
+        ShowAppointments = !ShowAppointments;
+    }
+    
+    private string SearchName {get; set;} = "";
+    private string SearchStatus {get; set;} = "";
+    private string SearchDate {get; set;} = "";
+
+    private List<Appointment> appointments = [];
+
+    private IEnumerable<Appointment> FilteredAppointments =>
+        appointments.Where(a =>
+            (string.IsNullOrWhiteSpace(SearchName) || a.Name.Contains(SearchName, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SearchStatus) || a.Status == SearchStatus) &&
+            (string.IsNullOrWhiteSpace(SearchDate) || a.Date.ToString("MM/dd/yyyy") == SearchDate)
+        );
+    private int userId = -1;
+
+
+    //protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //hardcoded for testing for user Albert Wesker profileId 1 patientId 1
+            //another accepted test user is Cloud Strife profileId 3 patientId 5
+            //Note change this to a dispoable Profile (any profileId above 5)
+            //userId = 8;
+
+            var foundUser = await UserService.GetLoggedInUser();
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+                @* StateHasChanged(); *@
+            }
+            else
+            {
+                return;
+            }
+
+
+            //Gets data in the lists and synced up
+            await AppState.LoadListsAsync();
+
+            //Copies the the data in the Appointments in the state file to the local variable
+            //appointments = AppState.OrderedAppointments;
+            foreach (var i in AppState.OrderedAppointments)
+            {
+                appointments.Add(i);
+                StateHasChanged();
+            }
+        }
+    }
+}

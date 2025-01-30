@@ -1,0 +1,77 @@
+@using DAS.Components.ServiceProviderComponents.Account
+@using DAS.Components.ServiceProviderComponents.Appointment
+@using DAS.Components.PatientComponents.Account
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>SP Dashboard</PageTitle>
+
+    <div>
+        <SPProfile />
+    </div>
+
+    <div>
+        <SPAppointmentList />
+    </div>
+
+    <div>
+        <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
+            @(showAvailableAppointments ? "Hide Available Appointments" : "Show Available Appointments")
+        </button>
+        @if(showAvailableAppointments)
+        {
+            <AvailableAppointmentsToday />
+        }
+        
+    </div>
+
+
+   <div>
+            <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
+            @* <button @onclick="() => signOutWindow = true">Sign out</button> *@
+
+            @if(signOutWindow == true)
+            {
+                <div>
+                    <p>@message</p>
+                    <button @onclick="SignOut" disabled="@isDisabled">Yes</button>
+                    <button @onclick="@(() => { signOutWindow = false; })" disabled="@isDisabled">No</button>
+
+                </div>
+            }
+    </div>
+
+@code{
+
+    public int userId = -1;
+
+    private bool showAvailableAppointments = false;
+
+    private void ToggleAppointments()
+    {
+        showAvailableAppointments = !showAvailableAppointments;
+    }
+
+    private bool signOutWindow = false;
+    //private bool signOutSuccess = false;
+    private bool isDisabled = false;
+    private string? message = "Are you sure you want to log out?";
+
+
+    private async Task SignOut()
+    {
+        isDisabled = true;
+        await UserService.DeleteLoggedInUser();
+
+        message = "Successfully signed out.  Returning to home page";
+        StateHasChanged();
+        await Task.Delay(5000);
+        NavigationManager.NavigateTo("/");
+
+    }
+
+    
+
+   
+
+}
