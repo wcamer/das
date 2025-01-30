@@ -31,13 +31,43 @@
             <NavLink class="nav-link" href="dashboard">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
-        </div>
+            </div>
+
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="home">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Available Appointments
+            </NavLink>
+            </div>
         }
 
-        @*Change if statement to check if DR is logged in*@
-        @if (true)
+        @* if statement to check if Patient is logged in*@
+        @if (profileType == "Patient")
         {
-            @*Dr/authorized user nav items will go here.*@
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="createAppointment">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Create Appointment
+            </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addGroupMember">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Add Group Member
+            </NavLink>
+            </div>
+
+        }
+
+        @* if statement to check if DR or Asscociate is logged in*@
+        @if (profileType == "Associate" || profileType == "Doctor" )
+        {
+            
+
+        }
+
+         @*if statement to check if Admin is logged in*@
+        @if (profileType == "Admin" )
+        {
+            
 
         }
         
