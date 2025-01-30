@@ -19,6 +19,9 @@ public class AppState
         _passwordHasher = passwordHasher;
     }
 
+    //This will get the current time info based in Mountain Time (i.e. 1/29/25 2:25:33 PM)
+    public DateTime mountainTimeNow = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time"));
+
 
 
     public List<Appointment> Appointments = [];

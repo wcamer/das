@@ -203,6 +203,8 @@ else
     {
         if(firstRender)
         {
+
+
             //Loading up the lists from the DB
             await AppState.LoadListsAsync();
             patients = AppState.Patients ;
@@ -239,7 +241,13 @@ else
                     Status = foundAppointment.Status,
                     AppointSetterId = foundAppointment.AppointSetterId
                 };
+
+                //set the first changeTrigger value to the foundAppointment Date
+                @* changeTrigger = foundAppointment.Date; *@
+                Console.WriteLine($"changeTrigger/appointment.date/oldAppointment.date {changeTrigger}.... {appointment.Date} .... {oldAppointment.Date}");
                 StateHasChanged();
+                Console.WriteLine($"afterrrrrrrrrrrrrr state change ******************changeTrigger/appointment.date/oldAppointment.date {changeTrigger}.... {appointment.Date} .... {oldAppointment.Date}");
+
             }
             else
             {
@@ -369,7 +377,7 @@ else
         message ="";
         AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
 
-        var currentDay = DateTime.Now;
+        var currentDay = AppState.mountainTimeNow;
         
         var chosenDay = appointment.Date;
         List<Appointment> dayAppointments = new List<Appointment>();
@@ -385,12 +393,13 @@ else
         // This will handle the same day appointments
         else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
         {
-            var currentTime = DateTime.Now.Hour;
+            var currentTime = AppState.mountainTimeNow.Hour;
             dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
 
             for (int hour = 0; hour <24; hour++)
             {
                 string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                //Console.WriteLine($"***********************************************Here is currentTime on same day ==== {currentTime}");
                 int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
 
 
@@ -416,7 +425,7 @@ else
                 string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
                 int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
 
-                @* Console.WriteLine($"???????? --------------------# of appointments scheduled at time: {time} / {hour} is = {numOfSchedAppoints} "); *@
+                Console.WriteLine($"???????? --------------------# of appointments scheduled at time: {time} / {hour} is = {numOfSchedAppoints} ");
 
 
                 if(numOfSchedAppoints < 2)
