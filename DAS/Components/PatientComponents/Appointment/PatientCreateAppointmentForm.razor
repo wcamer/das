@@ -161,8 +161,8 @@ else
     //This will hold the available slots for a particular day
     private List<AppointmentSlot> AvailableSlots {get; set;} = new List<AppointmentSlot>();
 
-    private DateTime todayDate = DateTime.Today; // this will default to today
-    private TimeSpan targetTime = DateTime.Now.TimeOfDay; //Defaults to current time
+    private DateTime? todayDate; // this will default to today
+    //private TimeSpan? targetTime ; //Defaults to current time
 
     
 
@@ -192,6 +192,10 @@ else
             await AppState.LoadListsAsync();
             patients = AppState.Patients; 
             appointmentList = AppState.Appointments;
+            todayDate = AppState.mountainTimeNow;
+
+            newAppointment.Date = AppState.mountainTimeNow;
+            newAppointment.Time = AppState.mountainTimeNow.Hour.ToString("h:mm tt");
             @* GetAvailableSlots(); *@
             StateHasChanged();
             
@@ -230,7 +234,7 @@ else
         //if the appointment date is the same present day
         else if(newAppointment.Date == todayDate)
         {
-            var currentHour = DateTime.Now.Hour;
+            var currentHour = AppState.mountainTimeNow.Hour;
             //reformating the appointment Time in preparation for comparison
             if(DateTime.TryParse(newAppointment.Time, out DateTime nAT))
             {
@@ -318,7 +322,7 @@ else
         message ="";
         AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
 
-        var currentDay = DateTime.Now;
+        var currentDay = AppState.mountainTimeNow;
         
         var chosenDay = newAppointment.Date;
         List<Appointment> dayAppointments = new List<Appointment>();
@@ -334,7 +338,7 @@ else
         // This will handle the same day appointments
         else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
         {
-            var currentTime = DateTime.Now.Hour;
+            var currentTime = AppState.mountainTimeNow.Hour;
             dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
 
             for (int hour = 0; hour <24; hour++)

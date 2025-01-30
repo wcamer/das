@@ -9,6 +9,9 @@
 {
     <div>
         <h3>Available Appointments For: @targetDay</h3>
+        @* <h3>The current time is @DateTime.Now</h3>
+        <h3>Timezone in appstate = @AppState.mountainTimeNow</h3>
+        <h3>Timezone -----=----- @DateTime.Now</h3> *@
         @* If there are any available slots... *@
         @if (AvailableSlots.Any())
         {
@@ -116,13 +119,24 @@ else
     {
         if(firstRender)
         {
+            @* var mountainTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time");
+            DateTime mountainTimeNow = TimeZoneInfo.ConvertTime(DateTime.UtcNow, mountainTimeZone); *@
+            
+            
+            targetDay = AppState.mountainTimeNow.ToString("MM/dd/yyyy"); // this will get today's date
+            targetTime = AppState.mountainTimeNow.TimeOfDay;  // this will get the time as of right now
             var foundUser = await UserService.GetLoggedInUser();
             if(foundUser != null )
             {
                 userId = foundUser.UserId;
                 profileType = foundUser.Type;
-                targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
-                targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
+
+                @* DateTime mountainTimeNow = TimeZoneInfo.ConvertTime(DateTime.UtcNow, mountainTimeZone);
+                targetDay = mountainTimeNow.ToString("MM/dd/yyyy"); // this will get today's date
+                targetTime = mountainTimeNow.TimeOfDay;  // this will get the time as of right now *@
+                
+                //targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
+                //targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
                 
                 InitializeSlots();
                 StateHasChanged();
@@ -130,8 +144,12 @@ else
             }
             else
             {
-                targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
-                targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
+                @* targetDay = mountainTimeNow.ToString("MM/dd/yyyy"); // this will get today's date
+                targetTime = mountainTimeNow.TimeOfDay;  // this will get the time as of right now
+                 *@
+
+                //targetDay = DateTime.Today.ToString("MM/dd/yyyy"); // this will get today's date
+                //targetTime = DateTime.Now.TimeOfDay;  // this will get the time as of right now
                 
                 InitializeSlots();
                 StateHasChanged();
@@ -161,11 +179,11 @@ else
         //Console.WriteLine($"*********//////////////////////// time {targetTime} date {targetDay} ****** targetTime {currentTime}");
 
 
-        foreach(var i in todaysAppointments)
+        @* foreach(var i in todaysAppointments)
         {
-           // Console.WriteLine($"********* time {i.Time} date {i.Date} ****** targetTime {currentTime}");
+            Console.WriteLine($"********* time {i.Time} date {i.Date} ****** targetTime {currentTime}");
            
-        }
+        } *@
         // Generate hourly slots from 12 AM to 11 PM
         for (int hour = 0; hour < 24; hour++)
         {
