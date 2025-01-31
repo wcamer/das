@@ -1,5 +1,4 @@
 @page "/sp-create-appointment"
-
 @using DAS.Models
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
@@ -7,142 +6,157 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
-<h2>Service Provider: Create Appointment</h2>
+<h2 class="mb-4">Service Provider: Create/Manage Appointments</h2>
 
 @if (!string.IsNullOrEmpty(Message))
 {
     <div class="alert alert-info">@Message</div>
 }
 
+<!-- Bypass Role Check for testing purposes -->
+@* 
 @if (userRole != "Provider")
 {
     <div class="alert alert-danger">You are not authorized to create appointments.</div>
 }
 else
-{
-    <!-- 
-                    1) Pick a date to see existing appointments
-                    2) Also to check open timeslots
-                -->
-    <div class="mb-3">
-        <label for="dateInput"><strong>Select Date:</strong></label>
-        <InputDate @bind-Value="SelectedDate" id="dateInput" class="form-control" />
-        <button class="btn btn-primary mt-2" @onclick="LoadAppointmentsForDate">Load Appointments</button>
-    </div>
+{ 
+*@
+<div class="alert alert-info">Authorization bypassed for testing purposes.</div>
 
-    <!-- 2) Show all appointments for that day in a child component -->
-    <div class="mb-4">
-        <h4>Appointments on @SelectedDate.ToString("MM/dd/yyyy")</h4>
-        <ProviderAppointmentDailyList SelectedDate="@SelectedDate" />
-    </div>
+<!-- 1) Date selection -->
+<div class="mb-3">
+    <label class="form-label"><strong>Select Date:</strong></label>
+    <InputDate @bind-Value="SelectedDate" class="form-control" @onchange="OnDateChanged" />
+    <button class="btn btn-primary mt-2" @onclick="LoadAppointmentsForDate">Load Appointments</button>
+</div>
 
-    <hr />
+<!-- 2) Daily Appointments Child Component -->
+<div class="mb-4">
+    <h4>Appointments on @SelectedDate.ToString("MM/dd/yyyy")</h4>
+    <ProviderAppointmentDailyList SelectedDate="@SelectedDate" ShowCancelButton="true"
+        OnCancelAppointment="HandleCancelAppointment" />
+</div>
 
-    <!-- 3) Check which times are open for the day -->
-    <div class="mb-4">
-        <button class="btn btn-secondary" @onclick="CheckAvailableTimes">
-            Check Available Times
-        </button>
-        @if (HasCheckedTimes)
+<hr />
+
+<!-- 3) Check available times -->
+<div class="mb-4">
+    <button class="btn btn-secondary" @onclick="CheckAvailableTimes">Check Available Times</button>
+    @if (HasCheckedTimes)
+    {
+        @if (AvailableTimeSlots.Any())
         {
-            @if (AvailableTimes.Any())
-            {
-                <p>Available Time Slots (Max 2 per hour):</p>
-                <ul>
-                    @foreach (var time in AvailableTimes)
-                    {
-                        <li>@time</li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <p>No remaining open slots for @SelectedDate.ToString("MM/dd/yyyy").</p>
-            }
+            <p>Available Time Slots (Max 2 per hour):</p>
+            <ul>
+                @foreach (var time in AvailableTimeSlots)
+                {
+                    <li>@time</li>
+                }
+            </ul>
         }
-    </div>
+        else
+        {
+            <p>No available time slots for @SelectedDate.ToString("MM/dd/yyyy").</p>
+        }
+    }
+</div>
 
-    <hr />
+<hr />
 
-    <!-- 4) Create Appointment Form -->
-    <div class="mb-4">
-        <h4>Create New Appointment</h4>
-        <EditForm Model="spNewAppointment" OnValidSubmit="CreateAppointment">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+<!-- 4) Create Appointment Form -->
+<div class="mb-4">
+    <h4>Create New Appointment</h4>
+    <EditForm Model="NewAppointment" OnValidSubmit="CreateAppointment">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-            <div class="mb-3">
-                <label for="patientSelect">Select Patient:</label>
-                <InputSelect @bind-Value="spNewAppointment.PatientId" id="patientSelect" class="form-control">
-                    <option value="">-- Choose a Patient --</option>
-                    @if (patients != null && patients.Any())
+        <div class="mb-3">
+            <label class="form-label">Select Patient:</label>
+            <!-- Bind to SelectedPatientId so that its setter auto-updates NewAppointment.Name -->
+            <InputSelect @bind-Value="SelectedPatientId" class="form-control">
+                <option value="">-- Choose a Patient --</option>
+                @if (patients != null && patients.Any())
+                {
+                    @foreach (var p in patients)
                     {
-                        @foreach (var p in patients)
-                        {
-                            <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
-                        }
+                        <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
                     }
-                </InputSelect>
-                <ValidationMessage For="@(() => spNewAppointment.PatientId)" />
-            </div>
+                }
+            </InputSelect>
+        </div>
 
-            <div class="mb-3">
-                <label>Date:</label>
-                <!--
-                                We bind the same SelectedDate from the page 
-                                so the appointment's Date will be set accordingly
-                            -->
-                <InputDate @bind-Value="spNewAppointment.Date" class="form-control" disabled />
-                <ValidationMessage For="@(() => spNewAppointment.Date)" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Date:</label>
+            <InputDate @bind-Value="NewAppointment.Date" class="form-control" />
+        </div>
 
-            <div class="mb-3">
-                <label>Time:</label>
-                <InputSelect @bind-Value="spNewAppointment.Time" class="form-control">
-                    <option value="">-- Select Time --</option>
-                    @if (AvailableTimes.Any())
+        <div class="mb-3">
+            <label class="form-label">Time Slot:</label>
+            <InputSelect @bind-Value="NewAppointment.Time" class="form-control">
+                <option value="">-- Select a Time --</option>
+                @if (AvailableTimeSlots.Any())
+                {
+                    @foreach (var slot in AvailableTimeSlots)
                     {
-                        @foreach (var time in AvailableTimes)
-                        {
-                            <option value="@time">@time</option>
-                        }
+                        <option value="@slot">@slot</option>
                     }
-                </InputSelect>
-                <ValidationMessage For="@(() => spNewAppointment.Time)" />
-            </div>
+                }
+            </InputSelect>
+        </div>
 
-            <button class="btn btn-success" type="submit">Create Appointment</button>
-        </EditForm>
-    </div>
+        <button class="btn btn-success" type="submit">Create Appointment</button>
+    </EditForm>
+</div>
+@* 
 }
+*@
 
 @code {
-    // The new appointment we're creating
-    private Appointment spNewAppointment = new()
+    // New appointment to be created.
+    private Appointment NewAppointment = new()
         {
             PatientId = -1,
-            Name = string.Empty,
+            Name = string.Empty, // Will be auto-populated based on the selected patient.
             Date = DateTime.Today,
             Time = string.Empty,
             Status = "Pending",
-            AppointSetterId = -999 // Placeholder, replace with actual provider ID if needed
+            AppointSetterId = -999 // Placeholder; will be updated from authentication/test fallback.
         };
 
+    // Local data collections.
     private List<Patient> patients = new();
     private List<Appointment> allAppointments = new();
 
+    // Currently selected date.
     private DateTime SelectedDate = DateTime.Today;
-    private List<string> AvailableTimes = new(); // e.g., "9:00 AM", "10:00 AM", etc.
-    private bool HasCheckedTimes = false; // Indicates if the provider has checked available times
+    // Available time slots (e.g., "8:00 AM", "9:00 AM", etc.).
+    private List<string> AvailableTimeSlots = new();
+    private bool HasCheckedTimes = false;
 
     private string? Message;
-    private int providerId = -1; // Replace with actual provider ID
+    private int providerId = -1; // Set from authentication/test fallback.
     private string userRole = string.Empty;
 
-    // Make the cascading parameter nullable
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    // Property for patient selection. When set, it updates NewAppointment.Name.
+    private int SelectedPatientId
+    {
+        get => NewAppointment.PatientId;
+        set
+        {
+            NewAppointment.PatientId = value;
+            var pat = patients.FirstOrDefault(p => p.PatientId == value);
+            if (pat != null)
+            {
+                NewAppointment.Name = $"{pat.FirstName} {pat.LastName}";
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,190 +166,194 @@ else
             var user = authState.User;
 
             if (user.Identity?.IsAuthenticated == true)
-
             {
                 userRole = user.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out providerId))
+                {
+                    // Provider ID from authentication.
+                }
+                else
+                {
+                    Message = "Provider ID could not be determined from authentication.";
+                    // For testing, assign a dummy provider ID.
+                    providerId = 1;
+                }
             }
-
-            if (userRole != "Provider")
+            else
             {
-                Message = "You are not authorized to create appointments.";
-                return;
+                Message = "You are not authenticated. Authorization bypassed for testing purposes.";
+                userRole = "Provider";
+                providerId = 1;
             }
 
-            // Retrieve User ID from claims
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            NewAppointment.AppointSetterId = providerId;
 
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                Message = "Provider ID could not be determined.";
-                return;
-            }
-
-            if (!int.TryParse(userIdClaim, out providerId))
-            {
-                Message = "Provider ID is invalid.";
-                return;
-            }
-
-            spNewAppointment.AppointSetterId = providerId;
-
-            // Load main data from the database via AppState
+            // Load data from the database.
             await AppState.LoadListsAsync();
-
-            // Store them in local variables for easy usage
             patients = AppState.Patients ?? new List<Patient>();
             allAppointments = AppState.OrderedAppointments ?? new List<Appointment>();
 
-            // Initialize the appointment date to the current SelectedDate
-            spNewAppointment.Date = SelectedDate;
+            NewAppointment.Date = SelectedDate;
+            // Calculate available time slots for the selected date.
+            CheckAvailableTimeSlots();
         }
         else
         {
             Message = "Authentication state is not available.";
-            return;
         }
     }
 
-    private void LoadAppointmentsForDate()
+    // Called when the date picker value changes.
+    private async Task OnDateChanged(ChangeEventArgs e)
     {
-        // This triggers the child component <ProviderAppointmentDailyList> to re-render
-        // because it takes SelectedDate as a parameter.
-        // If you need to reload from DB, do it here, but AppState is likely up-to-date.
-
-        Message = $"Loaded appointments for {SelectedDate:MM/dd/yyyy}";
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime newDate))
+        {
+            SelectedDate = newDate;
+            NewAppointment.Date = newDate;
+            await AppState.LoadListsAsync();
+            allAppointments = AppState.OrderedAppointments ?? new List<Appointment>();
+            CheckAvailableTimeSlots();
+        }
     }
 
-    private void CheckAvailableTimes()
+    // Alias method so that the button can call CheckAvailableTimes.
+    private void CheckAvailableTimes() => CheckAvailableTimeSlots();
+
+    // Recalculate available time slots for the selected date.
+    private void CheckAvailableTimeSlots()
     {
-        AvailableTimes.Clear();
+        AvailableTimeSlots.Clear();
         HasCheckedTimes = true;
 
-        // Ensure selected date is a weekday (Monday through Friday)
         if (SelectedDate.DayOfWeek == DayOfWeek.Saturday || SelectedDate.DayOfWeek == DayOfWeek.Sunday)
         {
             Message = "Selected date is on a weekend. Please choose a weekday (Monday through Friday).";
             return;
         }
 
-        // Filter the existing appointments for that day that are not cancelled
-        var dayAppointments = allAppointments
-        .Where(a => a.Date.Date == SelectedDate.Date && a.Status != "Cancelled")
+        var dayApps = allAppointments
+        .Where(a => a.Date.Date == SelectedDate.Date && a.Status != "Canceled")
         .ToList();
 
-        // Define business hours: 9 AM to 6 PM (last appointment at 5 PM)
-        for (int hour = 9; hour <= 17; hour++) // 9 AM to 5 PM
+        // Loop through business hours from 8 AM to 4 PM.
+        for (int hour = 8; hour < 17; hour++)
         {
-            // Format time in "h:mm tt"
-            var possibleTime = new DateTime(1, 1, 1, hour, 0, 0);
-            string displayTime = possibleTime.ToString("h:mm tt");
-
-            // Count existing appointments in this hour
-            int appointmentCount = dayAppointments
-            .Count(a => DateTime.TryParse(a.Time, out var existingTime) && existingTime.Hour == hour);
-
-            if (appointmentCount < 2)
+            var dt = new DateTime(1, 1, 1, hour, 0, 0);
+            string slot = dt.ToString("h:mm tt");
+            int count = dayApps.Count(a => DateTime.TryParse(a.Time, out var t) && t.Hour == hour);
+            if (count < 2)
             {
-                AvailableTimes.Add(displayTime);
+                AvailableTimeSlots.Add(slot);
             }
         }
 
-        if (AvailableTimes.Any())
+        if (AvailableTimeSlots.Any())
         {
             Message = $"Open slots found for {SelectedDate:MM/dd/yyyy}.";
         }
         else
         {
-            Message = $"No open slots for {SelectedDate:MM/dd/yyyy} (2 per hour limit reached).";
+            Message = $"No available time slots for {SelectedDate:MM/dd/yyyy} (2 per hour limit reached).";
         }
     }
 
+    // Called when the "Load Appointments" button is clicked.
+    private void LoadAppointmentsForDate()
+    {
+        Message = $"Appointments loaded for {SelectedDate:MM/dd/yyyy}.";
+    }
+
+    // Create a new appointment when the form is submitted.
     private async Task CreateAppointment()
     {
-        // 1. Validate patient selection
-        if (spNewAppointment.PatientId < 1)
+        if (NewAppointment.PatientId < 1)
         {
-            Message = "Please select a valid patient.";
+            Message = "Please select a patient.";
             return;
         }
-
-        // 2. Validate time selection
-        if (string.IsNullOrEmpty(spNewAppointment.Time))
+        if (string.IsNullOrWhiteSpace(NewAppointment.Time))
         {
-            Message = "Please select a valid time.";
+            Message = "Please select a time slot.";
             return;
         }
-
-        // 3. Convert spNewAppointment.Time to a .NET DateTime to see the hour
-        if (!DateTime.TryParse(spNewAppointment.Time, out var chosenTime))
+        if (!DateTime.TryParse(NewAppointment.Time, out var chosenTime))
         {
             Message = "Invalid time format. Please select a valid time slot.";
             return;
         }
 
-        // 4. Check if the selected time slot is still available
-        var dayAppointments = allAppointments
-        .Where(a => a.Date.Date == spNewAppointment.Date.Date && a.Status != "Cancelled")
+        var dayApps = allAppointments
+        .Where(a => a.Date.Date == NewAppointment.Date.Date && a.Status != "Canceled")
         .ToList();
-
         int hour = chosenTime.Hour;
-        int hourCount = dayAppointments
-        .Count(a => DateTime.TryParse(a.Time, out var existingTime) && existingTime.Hour == hour);
-
-        if (hourCount >= 2)
+        int count = dayApps.Count(a => DateTime.TryParse(a.Time, out var t) && t.Hour == hour);
+        if (count >= 2)
         {
-            Message = $"That hour is already fully booked ({hourCount} / 2). Please choose a different time.";
+            Message = $"That hour is already fully booked ({count}/2).";
             return;
         }
 
-        // 5. Fill in the appointment Name from the chosen patient
-        var selectedPatient = patients.FirstOrDefault(p => p.PatientId == spNewAppointment.PatientId);
-        if (selectedPatient == null)
+        // Ensure that the Name field is populated.
+        if (string.IsNullOrWhiteSpace(NewAppointment.Name))
         {
-            Message = "Could not find the selected patient. Please try again.";
-            return;
-        }
-        spNewAppointment.Name = $"{selectedPatient.FirstName} {selectedPatient.LastName}";
-
-        // 6. Create a new appointment object to add
-        var newAppt = new Appointment
+            var pat = patients.FirstOrDefault(p => p.PatientId == NewAppointment.PatientId);
+            if (pat != null)
             {
-                PatientId = spNewAppointment.PatientId,
-                Name = spNewAppointment.Name,
-                Date = spNewAppointment.Date,
-                Time = spNewAppointment.Time,
+                NewAppointment.Name = $"{pat.FirstName} {pat.LastName}";
+            }
+        }
+
+        var appt = new Appointment
+            {
+                PatientId = NewAppointment.PatientId,
+                Name = NewAppointment.Name,
+                Date = NewAppointment.Date,
+                Time = NewAppointment.Time,
                 Status = "Pending",
-                AppointSetterId = providerId // Assign the provider's ID
+                AppointSetterId = providerId
             };
 
-        // 7. Add to DB via AppState
-        var success = await AppState.AddAppointment(newAppt);
+        var success = await AppState.AddAppointment(appt);
+        if (!success)
+        {
+            Message = "Error creating appointment (DB error).";
+            return;
+        }
+
+        await AppState.LoadListsAsync();
+        allAppointments = AppState.OrderedAppointments ?? new List<Appointment>();
+        CheckAvailableTimeSlots();
+
+        Message = $"Appointment created for {appt.Name} on {appt.Date:MM/dd/yyyy} at {appt.Time}.";
+
+        // Reset the form (clear patient selection and time slot, keep date).
+        NewAppointment = new Appointment
+            {
+                PatientId = -1,
+                Name = string.Empty,
+                Date = SelectedDate,
+                Time = string.Empty,
+                Status = "Pending",
+                AppointSetterId = providerId
+            };
+    }
+
+    // Called when the child component signals that an appointment should be canceled.
+    private async Task HandleCancelAppointment(Appointment appt)
+    {
+        appt.Status = "Canceled";
+        bool success = await AppState.EditAppointment(appt.AppointmentId, providerId, appt);
         if (success)
         {
-            // Refresh local lists
             await AppState.LoadListsAsync();
             allAppointments = AppState.OrderedAppointments ?? new List<Appointment>();
-
-            Message = $"Appointment created for {newAppt.Name} on {newAppt.Date:MM/dd/yyyy} at {newAppt.Time}!";
-            StateHasChanged();
-
-            // Clear the form
-            spNewAppointment = new Appointment
-                {
-                    PatientId = -1,
-                    Name = string.Empty,
-                    Date = SelectedDate,
-                    Time = string.Empty,
-                    Status = "Pending",
-                    AppointSetterId = providerId
-                };
-
-            // Refresh available times to reflect the new booking
-            CheckAvailableTimes();
+            CheckAvailableTimeSlots();
+            Message = $"Canceled appointment #{appt.AppointmentId}.";
         }
         else
         {
-            Message = "Something went wrong. Could not create appointment.";
+            Message = "Failed to cancel appointment.";
         }
     }
 }

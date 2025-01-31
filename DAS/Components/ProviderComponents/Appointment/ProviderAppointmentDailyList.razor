@@ -1,11 +1,16 @@
+@page "/sp-appointment-daily-list"
 @using DAS.Models
 @inject AppState AppState
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-@if (DailyAppointments == null || !DailyAppointments.Any())
+@* The parent component already displays the date, so we remove this header *@
+@* <h3>Appointments for @SelectedDate.ToString("MM/dd/yyyy")</h3> *@
+
+@if (AppState.OrderedAppointments == null || !AppState.OrderedAppointments.Any(a => a.Date.Date == SelectedDate.Date))
 {
-    <p>No appointments found for @SelectedDate.ToString("MM/dd/yyyy").</p>
+    <p>No appointments scheduled for @SelectedDate.ToString("MM/dd/yyyy").</p>
 }
 else
 {
@@ -17,10 +22,12 @@ else
                 <th>Time</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>AppointmentId</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var appt in DailyAppointments)
+            @foreach (var appt in AppState.OrderedAppointments.Where(a => a.Date.Date == SelectedDate.Date).OrderBy(a =>
+           a.Time))
             {
                 <tr>
                     <td>@appt.Name</td>
@@ -28,16 +35,17 @@ else
                     <td>@appt.Time</td>
                     <td>@appt.Status</td>
                     <td>
-                        @if (appt.Status != "Cancelled")
+                        @if (ShowCancelButton && appt.Status != "Canceled")
                         {
-                            <button class="btn btn-warning btn-sm"
-                                @onclick="() => CancelAppointment(appt.AppointmentId)">Cancel</button>
+                            <button class="btn btn-danger btn-sm"
+                                @onclick="() => OnCancelAppointment.InvokeAsync(appt)">Cancel</button>
                         }
-                        else
+                        else if (appt.Status == "Canceled")
                         {
-                            <span class="text-muted">Cancelled</span>
+                            <em>(Canceled)</em>
                         }
                     </td>
+                    <td>@appt.AppointmentId</td>
                 </tr>
             }
         </tbody>
@@ -46,51 +54,19 @@ else
 
 @code {
     [Parameter]
-    public DateTime SelectedDate { get; set; }
+    public DateTime SelectedDate { get; set; } = DateTime.Today;
 
-    private List<Appointment> allAppointments = new();
-    private List<Appointment> DailyAppointments = new();
+    // If true, the "Cancel" button is shown in each row.
+    [Parameter]
+    public bool ShowCancelButton { get; set; } = false;
+
+    // Callback for cancellation action.
+    [Parameter]
+    public EventCallback<Appointment> OnCancelAppointment { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        // Load the main lists from the DB (if not already loaded)
+        // Load the latest lists from AppState.
         await AppState.LoadListsAsync();
-        allAppointments = AppState.OrderedAppointments;
-
-        // Filter for the selected date
-        DailyAppointments = allAppointments
-        .Where(a => a.Date.Date == SelectedDate.Date)
-        .OrderBy(a => DateTime.Parse(a.Time))
-        .ToList();
-    }
-
-    private async Task CancelAppointment(int appointmentId)
-    {
-        // Confirm cancellation with the provider
-        bool confirm = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to cancel this appointment?");
-        if (confirm)
-        {
-            // Call the existing DeletePatientAppointment method to delete the appointment
-            var success = await AppState.DeletePatientAppointment(appointmentId);
-            if (success)
-            {
-                // Reload appointments to reflect changes
-                await AppState.LoadListsAsync();
-                allAppointments = AppState.OrderedAppointments;
-                DailyAppointments = allAppointments
-                .Where(a => a.Date.Date == SelectedDate.Date)
-                .OrderBy(a => DateTime.Parse(a.Time))
-                .ToList();
-
-                // Notify the provider of successful cancellation
-                await JSRuntime.InvokeVoidAsync("alert", "Appointment cancelled successfully.");
-                StateHasChanged();
-            }
-            else
-            {
-                // Notify the provider of failure to cancel
-                await JSRuntime.InvokeVoidAsync("alert", "Failed to cancel the appointment. Please try again.");
-            }
-        }
     }
 }
