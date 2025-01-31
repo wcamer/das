@@ -22,9 +22,9 @@
 else
 {
     <!-- 
-                1) Pick a date to see existing appointments
-                2) Also to check open timeslots
-            -->
+                    1) Pick a date to see existing appointments
+                    2) Also to check open timeslots
+                -->
     <div class="mb-3">
         <label for="dateInput"><strong>Select Date:</strong></label>
         <InputDate @bind-Value="SelectedDate" id="dateInput" class="form-control" />
@@ -90,9 +90,9 @@ else
             <div class="mb-3">
                 <label>Date:</label>
                 <!--
-                            We bind the same SelectedDate from the page 
-                            so the appointment's Date will be set accordingly
-                        -->
+                                We bind the same SelectedDate from the page 
+                                so the appointment's Date will be set accordingly
+                            -->
                 <InputDate @bind-Value="spNewAppointment.Date" class="form-control" disabled />
                 <ValidationMessage For="@(() => spNewAppointment.Date)" />
             </div>
