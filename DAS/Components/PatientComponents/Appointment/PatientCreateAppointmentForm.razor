@@ -226,8 +226,9 @@ else
 
         //This is a check to make sure the appointment that is about to be created is valid
         //If the appointment date is in the past
-        if(newAppointment.Date < todayDate)
+        if(newAppointment.Date < todayDate.Value.Date)
         {
+            //Console.WriteLine($"here is newappDate  == {newAppointment.Date.Date} here is todayDAte {todayDate}");
             message = "Please enter a date that is either present day or a future date";
             return;
         }
@@ -252,7 +253,11 @@ else
 
         }// at this point it has been determined that the appointment's date is at least present day or later and in a future hour
         
-        
+        if(newAppointment.Time == "h:mm tt")
+        {
+            message = "Please select a time";
+            return;
+        }
 
         //Setting who set the appointment equal to the logged in user's id
         newAppointment.AppointSetterId = userId;
