@@ -6,7 +6,7 @@ namespace DAS.Models;
 public class ServiceProviders
 {
 
-    public required int ServiceProvidersId { get; set; }
+    public int ServiceProvidersId { get; set; }
 
     public string? Type { get; set; } = "Associate"; //defaults to Associate
 
