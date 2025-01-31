@@ -1,4 +1,5 @@
 @page "/sp-appointment-daily-list"
+@namespace DAS.Components.ProviderComponents.Appointment
 @using DAS.Models
 @inject AppState AppState
 @inject NavigationManager NavigationManager
@@ -8,46 +9,46 @@
 
 @if (AppState.OrderedAppointments == null || !AppState.OrderedAppointments.Any(a => a.Date.Date == SelectedDate.Date))
 {
-    <p>No appointments scheduled for @SelectedDate.ToString("MM/dd/yyyy").</p>
+            <p>No appointments scheduled for @SelectedDate.ToString("MM/dd/yyyy").</p>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Patient Name</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th>Actions</th>
-                <th>AppointmentId</th>
-            </tr>
-        </thead>
-        <tbody>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                        <th>AppointmentId</th>
+                    </tr>
+                </thead>
+                <tbody>
             @foreach (var appt in AppState.OrderedAppointments.Where(a => a.Date.Date == SelectedDate.Date).OrderBy(a =>
-           a.Time))
+         a.Time))
             {
-                <tr>
-                    <td>@appt.Name</td>
-                    <td>@appt.Date.ToString("MM/dd/yyyy")</td>
-                    <td>@appt.Time</td>
-                    <td>@appt.Status</td>
-                    <td>
+                                <tr>
+                                    <td>@appt.Name</td>
+                                    <td>@appt.Date.ToString("MM/dd/yyyy")</td>
+                                    <td>@appt.Time</td>
+                                    <td>@appt.Status</td>
+                                    <td>
                         @if (ShowCancelButton && appt.Status != "Canceled")
                         {
-                            <button class="btn btn-danger btn-sm"
-                                @onclick="() => OnCancelAppointment.InvokeAsync(appt)">Cancel</button>
+                                                    <button class="btn btn-danger btn-sm"
+                                                        @onclick="() => OnCancelAppointment.InvokeAsync(appt)">Cancel</button>
                         }
                         else if (appt.Status == "Canceled")
                         {
-                            <em>(Canceled)</em>
+                                                    <em>(Canceled)</em>
                         }
-                    </td>
-                    <td>@appt.AppointmentId</td>
-                </tr>
+                                    </td>
+                                    <td>@appt.AppointmentId</td>
+                                </tr>
             }
-        </tbody>
-    </table>
+                </tbody>
+            </table>
 }
 
 @code {
