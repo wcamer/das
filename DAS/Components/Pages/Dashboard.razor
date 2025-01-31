@@ -1,5 +1,6 @@
 @page "/Dashboard"
 @using DAS.Components.PatientComponents
+@using DAS.Components.ServiceProviderComponents
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>
@@ -22,7 +23,7 @@ else
     }
     else if (profileType == "Associate" || profileType == "Doctor")
     {
-        <p>You are a @profileType</p>
+        <SPDashboard />
     }
     else if (profileType == "Admin")
     {

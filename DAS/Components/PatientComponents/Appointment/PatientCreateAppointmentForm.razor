@@ -161,8 +161,8 @@ else
     //This will hold the available slots for a particular day
     private List<AppointmentSlot> AvailableSlots {get; set;} = new List<AppointmentSlot>();
 
-    private DateTime todayDate = DateTime.Today; // this will default to today
-    private TimeSpan targetTime = DateTime.Now.TimeOfDay; //Defaults to current time
+    private DateTime? todayDate; // this will default to today
+    //private TimeSpan? targetTime ; //Defaults to current time
 
     
 
@@ -192,6 +192,10 @@ else
             await AppState.LoadListsAsync();
             patients = AppState.Patients; 
             appointmentList = AppState.Appointments;
+            todayDate = AppState.mountainTimeNow;
+
+            newAppointment.Date = AppState.mountainTimeNow;
+            newAppointment.Time = AppState.mountainTimeNow.Hour.ToString("h:mm tt");
             @* GetAvailableSlots(); *@
             StateHasChanged();
             
@@ -222,15 +226,16 @@ else
 
         //This is a check to make sure the appointment that is about to be created is valid
         //If the appointment date is in the past
-        if(newAppointment.Date < todayDate)
+        if(newAppointment.Date < todayDate.Value.Date)
         {
+            //Console.WriteLine($"here is newappDate  == {newAppointment.Date.Date} here is todayDAte {todayDate}");
             message = "Please enter a date that is either present day or a future date";
             return;
         }
         //if the appointment date is the same present day
         else if(newAppointment.Date == todayDate)
         {
-            var currentHour = DateTime.Now.Hour;
+            var currentHour = AppState.mountainTimeNow.Hour;
             //reformating the appointment Time in preparation for comparison
             if(DateTime.TryParse(newAppointment.Time, out DateTime nAT))
             {
@@ -248,7 +253,11 @@ else
 
         }// at this point it has been determined that the appointment's date is at least present day or later and in a future hour
         
-        
+        if(newAppointment.Time == "h:mm tt")
+        {
+            message = "Please select a time";
+            return;
+        }
 
         //Setting who set the appointment equal to the logged in user's id
         newAppointment.AppointSetterId = userId;
@@ -318,7 +327,7 @@ else
         message ="";
         AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
 
-        var currentDay = DateTime.Now;
+        var currentDay = AppState.mountainTimeNow;
         
         var chosenDay = newAppointment.Date;
         List<Appointment> dayAppointments = new List<Appointment>();
@@ -334,7 +343,7 @@ else
         // This will handle the same day appointments
         else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
         {
-            var currentTime = DateTime.Now.Hour;
+            var currentTime = AppState.mountainTimeNow.Hour;
             dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
 
             for (int hour = 0; hour <24; hour++)

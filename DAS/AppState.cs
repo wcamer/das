@@ -13,11 +13,16 @@ public class AppState
 
     private readonly DASContext _dbContext;
     private readonly IPasswordHasher<Profile> _passwordHasher;
-    public AppState(DASContext dbContext, IPasswordHasher<Profile> passwordHasher)
+    private readonly IPasswordHasher<ServiceProviders> _passwordHasherSP;
+    public AppState(DASContext dbContext, IPasswordHasher<Profile> passwordHasher, IPasswordHasher<ServiceProviders> passwordHasherSP)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
+        _passwordHasherSP = passwordHasherSP;
     }
+
+    //This will get the current time info based in Mountain Time (i.e. 1/29/25 2:25:33 PM)
+    public DateTime mountainTimeNow = TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time"));
 
 
 
@@ -629,6 +634,92 @@ public class AppState
             return false;
         }
     }
+
+        //This will return a service provider based on a given user's id for security
+    public async Task<ServiceProviders?> GetServiceProviderById(int userId)
+    {
+        try
+        {
+            var serviceProvider = await _dbContext.ServiceProviders.SingleOrDefaultAsync(p => p.ServiceProvidersId == userId);
+            if (serviceProvider == null)
+            {
+                return null;
+            }
+            else
+            {
+                return serviceProvider;
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+    }
+
+    public async Task<ServiceProviders?> GetServiceProviderByCreds(ServiceProviders submittedProfile, string email, string password)
+    {
+        try
+        {
+
+            var profile = await _dbContext.ServiceProviders.SingleOrDefaultAsync(p => p.Email == email);
+
+            if (profile != null)
+            {
+                var result = _passwordHasherSP.VerifyHashedPassword(profile, profile.Password ?? "", password);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    return profile;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        catch
+        {
+            return null;
+        }
+
+    } // end of GetServiceProviderByCreds function
+
+    public async Task<bool> AddNewServiceProviderToDb(ServiceProviders newProfile)
+    {
+        //Trying to find if there is a profile that already has this set of creds
+        var targetProfile = await _dbContext.ServiceProviders.SingleOrDefaultAsync(p => p.Email == newProfile.Email && p.Password == newProfile.Password);
+
+        //check to see if the profile doesn't already exist, if so return false
+        if (targetProfile == null)
+        {
+            try
+            {
+                _dbContext.ServiceProviders.Add(newProfile);
+                await _dbContext.SaveChangesAsync();
+                ServiceProviders.Add(newProfile); // updates the profiles list in state
+                return true;
+            }
+
+            //If there are any problems trying to add the profile to the database it will return a False boolean
+            catch
+            {
+
+                return false;
+
+            }
+        }
+        // If there was an existing profile then it won't be added again
+        else
+        {
+            return false;
+        }
+    }// end of AddNewServiceProviderToDb function
 
 
 

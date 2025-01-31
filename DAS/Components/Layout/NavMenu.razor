@@ -1,4 +1,5 @@
-﻿@*
+﻿@rendermode InteractiveServer
+@*
     Whenver a new page is created, add the nav in the logged in nav section or dr logged in nav section.
 *@
 
@@ -12,30 +13,61 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Login
             </NavLink>
         </div>
 
-        @*Once auth is figured out, put the condition in the if statement to check which profile type is logged in. *@
 
+        @*Once auth is figured out, put the condition in the if statement to check which profile type is logged in. *@
         @*Change if statement below to check if any profile is logged in.*@
         
-        @if (true)
+        @if (profileType == "Patient" || profileType == "Associate" || profileType == "Doctor" || profileType == "Admin")
         {
             @*Logged in Nav Items will go here*@
             <div class="nav-item px-3">
             <NavLink class="nav-link" href="dashboard">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
-        </div>
+            </div>
+
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="home">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Available Appointments
+            </NavLink>
+            </div>
         }
 
-        @*Change if statement to check if DR is logged in*@
-        @if (true)
+        @* if statement to check if Patient is logged in*@
+        @if (profileType == "Patient")
         {
-            @*Dr/authorized user nav items will go here.*@
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="createAppointment">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Create Appointment
+            </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addGroupMember">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Add Group Member
+            </NavLink>
+            </div>
+
+        }
+
+        @* if statement to check if DR or Asscociate is logged in*@
+        @if (profileType == "Associate" || profileType == "Doctor" )
+        {
+            
+
+        }
+
+         @*if statement to check if Admin is logged in*@
+        @if (profileType == "Admin" )
+        {
+            
 
         }
         
@@ -43,3 +75,19 @@
     </nav>
 </div>
 
+@code {
+
+    private string profileType = "Non-User";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {  
+        if (firstRender)
+        {
+            var profile = await UserService.GetLoggedInUser();
+            if(profile != null)
+            {
+                profileType = profile.Type;
+                StateHasChanged();
+            }
+        }
+    }
+}
