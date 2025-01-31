@@ -1,5 +1,6 @@
 @page "/sp-create-appointment"
 @using DAS.Models
+@using DAS.Components.ProviderComponents.Appointment
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AppState AppState
@@ -33,7 +34,7 @@ else
     <button class="btn btn-primary mt-2" @onclick="LoadAppointmentsForDate">Load Appointments</button>
 </div>
 
-<!-- 2) Daily Appointments Child Component -->
+<!-- 2) Daily Appointments -->
 <div class="mb-4">
     <h4>Appointments on @SelectedDate.ToString("MM/dd/yyyy")</h4>
     <ProviderAppointmentDailyList SelectedDate="@SelectedDate" ShowCancelButton="true"
@@ -132,7 +133,7 @@ else
 
     // Currently selected date.
     private DateTime SelectedDate = DateTime.Today;
-    // Available time slots (e.g., "8:00 AM", "9:00 AM", etc.).
+    // Available time slots.
     private List<string> AvailableTimeSlots = new();
     private bool HasCheckedTimes = false;
 
@@ -171,7 +172,7 @@ else
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out providerId))
                 {
-                    // Provider ID from authentication.
+                    // Provider ID obtained from authentication.
                 }
                 else
                 {
@@ -236,7 +237,6 @@ else
         .Where(a => a.Date.Date == SelectedDate.Date && a.Status != "Canceled")
         .ToList();
 
-        // Loop through business hours from 8 AM to 4 PM.
         for (int hour = 8; hour < 17; hour++)
         {
             var dt = new DateTime(1, 1, 1, hour, 0, 0);
@@ -327,7 +327,7 @@ else
 
         Message = $"Appointment created for {appt.Name} on {appt.Date:MM/dd/yyyy} at {appt.Time}.";
 
-        // Reset the form (clear patient selection and time slot, keep date).
+        // Reset the form (clear patient selection and time slot; keep the date).
         NewAppointment = new Appointment
             {
                 PatientId = -1,
@@ -339,7 +339,7 @@ else
             };
     }
 
-    // Called when the child component signals that an appointment should be canceled.
+    // Called when the appointment should be canceled.
     private async Task HandleCancelAppointment(Appointment appt)
     {
         appt.Status = "Canceled";

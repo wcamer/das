@@ -5,8 +5,6 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-@* The parent component already displays the date, so we remove this header *@
-@* <h3>Appointments for @SelectedDate.ToString("MM/dd/yyyy")</h3> *@
 
 @if (AppState.OrderedAppointments == null || !AppState.OrderedAppointments.Any(a => a.Date.Date == SelectedDate.Date))
 {
