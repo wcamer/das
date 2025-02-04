@@ -102,7 +102,10 @@
 
             //This is just for demo purposes to show that the login was successful
             await Task.Delay(3000);
-            NavigationManager.NavigateTo("/dashboard");
+            @* NavigationManager.NavigateTo("/dashboard"); *@
+
+            //Not an elegant solution but will work for now
+            NavigationManager.NavigateTo("/dashboard", forceLoad: true);
         }
         else
         {

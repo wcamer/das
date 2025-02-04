@@ -248,7 +248,9 @@ else
         message = "Successfully signed out.  Returning to home page";
         StateHasChanged();
         await Task.Delay(5000);
-        NavigationManager.NavigateTo("/");
+        //NavigationManager.NavigateTo("/", forceLoad: true);
+        //Not an elegant solution but will work for now
+        NavigationManager.NavigateTo("/", forceLoad: true);
 
     }
 
