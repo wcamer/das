@@ -15,7 +15,7 @@
     <nav class="nav flex-column">
         @if (profileType == "Non-User")
         {
-            <p>Hello New User</p>
+            @* <p>Hello New User</p> *@
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                     <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Login
@@ -32,7 +32,7 @@
         @if (profileType == "Patient" || profileType == "Associate" || profileType == "Doctor" || profileType ==
         "Admin")
         {
-            <h1>Hello @profileType</h1>
+            @* <h1>Hello @profileType</h1> *@
             @*Logged in Nav Items will go here*@
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="dashboard">
@@ -42,6 +42,7 @@
 
 
         }
+
 
         @* if statement to check if Patient is logged in*@
         @if (profileType == "Patient")
@@ -69,7 +70,6 @@
 
         @* if statement to check if DR or Asscociate is logged in*@
         @if (profileType == "Associate" || profileType == "Doctor")
-
         {
 
             <div class="nav-item px-3">
