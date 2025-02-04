@@ -21,6 +21,12 @@ else
     @if(changeTrigger != appointment.Date)
     {
         GetAvailableSlots();
+        if(AvailableSlots.Any())
+        {
+            //Defaults to the first available time slot if there are any available time slots
+            appointment.Time = AvailableSlots[0].Time;  
+        }
+        
         changeTrigger = appointment.Date;
 
     }
@@ -61,6 +67,11 @@ else
             <label>Appointment Set For:</label>
             <input value="@targetPatient" disabled />
             
+        </div>
+
+        <div>
+            <label>Current Appointment Date</label>
+            <input value="@oldAppointment.Date.ToString("MM/dd/yyyy")" disabled/>
         </div>
 
         <div>

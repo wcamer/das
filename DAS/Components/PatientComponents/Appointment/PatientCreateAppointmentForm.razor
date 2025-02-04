@@ -25,6 +25,11 @@ else
     @if(changeTrigger != newAppointment.Date)
     {
         GetAvailableSlots();
+        if(AvailableSlots.Any())
+        {
+            //Defaults to the first available time for that day if there are any available slots
+            newAppointment.Time = AvailableSlots[0].Time;
+        }
         changeTrigger = newAppointment.Date;
 
     }
