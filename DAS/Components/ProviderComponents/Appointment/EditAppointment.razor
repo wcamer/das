@@ -1,4 +1,4 @@
-@page "/edit-appointment/{id:int}"
+@page "/sp-edit-appointment/{id:int}"
 @using DAS.Models
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
@@ -6,6 +6,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
 
 <h2>Edit Appointment</h2>
 
@@ -25,7 +26,7 @@ else
         <ValidationSummary />
 
         <div class="mb-3">
-            <label for="patientSelect">Select Patient:</label>
+            <label class="form-label" for="patientSelect">Select Patient:</label>
             <InputSelect @bind-Value="appointment.PatientId" id="patientSelect" class="form-control">
                 <option value="">-- Choose a Patient --</option>
                 @if (patients != null && patients.Any())
@@ -40,20 +41,25 @@ else
         </div>
 
         <div class="mb-3">
-            <label>Date:</label>
+            <label class="form-label">Date:</label>
             <InputDate @bind-Value="appointment.Date" class="form-control" />
             <ValidationMessage For="@(() => appointment.Date)" />
         </div>
 
         <div class="mb-3">
-            <label>Time:</label>
+            <label class="form-label">Time:</label>
             <InputText @bind-Value="appointment.Time" class="form-control" />
             <ValidationMessage For="@(() => appointment.Time)" />
         </div>
 
         <div class="mb-3">
-            <label>Status:</label>
-            <InputText @bind-Value="appointment.Status" class="form-control" />
+            <label class="form-label">Status:</label>
+            <InputSelect @bind-Value="appointment.Status" class="form-control">
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Canceled">Canceled</option>
+            </InputSelect>
             <ValidationMessage For="@(() => appointment.Status)" />
         </div>
 
@@ -69,26 +75,28 @@ else
     private Appointment? appointment;
     private List<Patient> patients = new();
     private string? Message;
-    private int providerId = -1;
+    private int providerId = 1; // For testing, we set a dummy provider ID
 
-    // Retrieve the authentication state (nullable)
+    // For testing purposes, we comment out the authentication checks.
+    /*
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // Get the current user's authentication state
         if (authenticationStateTask is not null)
         {
             var authState = await authenticationStateTask;
             var user = authState.User;
-
-            // Use the null-conditional operator to safely check authentication
             if (user.Identity?.IsAuthenticated == true)
             {
-                // Retrieve the provider's ID from the NameIdentifier claim
+                // Optionally, check role here.
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out providerId))
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out providerId))
+                {
+                    // Provider ID obtained from authentication.
+                }
+                else
                 {
                     Message = "Provider ID could not be determined or is invalid.";
                     return;
@@ -105,12 +113,20 @@ else
             Message = "Authentication state is not available.";
             return;
         }
+        // ... (rest of the code)
+    }
+    */
 
-        // Load patients and appointments
+    // Instead, for testing, we skip authentication and set a dummy provider ID.
+    protected override async Task OnInitializedAsync()
+    {
+        providerId = 1;  // Dummy provider ID for testing
+
+        // Load the list of patients.
         await AppState.LoadListsAsync();
         patients = AppState.Patients ?? new List<Patient>();
 
-        // Load the specific appointment ensuring it belongs to the current provider
+        // Load the appointment (if it exists) for the given id and provider.
         appointment = await AppState.GetAppointmentById(id, providerId);
         if (appointment == null)
         {
@@ -144,7 +160,7 @@ else
             Message = "No appointment to delete.";
             return;
         }
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this appointment?");
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Are you sure you want to delete this appointment?" });
         if (confirmed)
         {
             bool success = await AppState.DeletePatientAppointment(appointment.AppointmentId);
