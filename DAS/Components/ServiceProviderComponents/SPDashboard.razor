@@ -6,42 +6,42 @@
 
 <PageTitle>SP Dashboard</PageTitle>
 
-    <div>
-        <SPProfile />
-    </div>
+<div>
+    <SPProfile />
+</div>
 
-    <div>
-        <SPAppointmentList />
-    </div>
+<div>
+    <SPAppointmentList />
+</div>
 
-    <div>
-        <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
-            @(showAvailableAppointments ? "Hide Available Appointments" : "Show Available Appointments")
-        </button>
-        @if(showAvailableAppointments)
-        {
-            <AvailableAppointmentsToday />
-        }
-        
-    </div>
+<div>
+    <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
+        @(showAvailableAppointments ? "Hide Available Appointments" : "Show Available Appointments")
+    </button>
+    @if (showAvailableAppointments)
+    {
+        <AvailableAppointmentsToday />
+    }
+
+</div>
 
 
-   <div>
-            <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
-            @* <button @onclick="() => signOutWindow = true">Sign out</button> *@
+<div>
+    <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
+    @* <button @onclick="() => signOutWindow = true">Sign out</button> *@
 
-            @if(signOutWindow == true)
-            {
-                <div>
-                    <p>@message</p>
-                    <button @onclick="SignOut" disabled="@isDisabled">Yes</button>
-                    <button @onclick="@(() => { signOutWindow = false; })" disabled="@isDisabled">No</button>
+    @if (signOutWindow == true)
+    {
+        <div>
+            <p>@message</p>
+            <button @onclick="SignOut" disabled="@isDisabled">Yes</button>
+            <button @onclick="@(() => { signOutWindow = false; })" disabled="@isDisabled">No</button>
 
-                </div>
-            }
-    </div>
+        </div>
+    }
+</div>
 
-@code{
+@code {
 
     public int userId = -1;
 
@@ -63,15 +63,17 @@
         isDisabled = true;
         await UserService.DeleteLoggedInUser();
 
-        message = "Successfully signed out.  Returning to home page";
+        message = "Successfully signed out. Returning to home page";
         StateHasChanged();
         await Task.Delay(5000);
-        NavigationManager.NavigateTo("/");
+        @* NavigationManager.NavigateTo("/"); *@
+        //This isn't an elegant solution but it will work for now
+        NavigationManager.NavigateTo("/", forceLoad: true);
 
     }
 
-    
 
-   
+
+
 
 }
