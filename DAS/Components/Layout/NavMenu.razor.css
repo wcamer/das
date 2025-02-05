@@ -1,29 +1,51 @@
+/* NAVBAR TOGGLER (Hamburger icon) */
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
     width: 3.5rem;
     height: 2.5rem;
-    color: white;
+    color: #F5F7FA; /* Off-white for the icon color */
     position: absolute;
     top: 0.5rem;
     right: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem rgba(255, 255, 255, 0.1);
+
+    /* A subtle border in teal */
+    border: 1px solid rgba(45, 197, 161, 0.4);
+
+    /* 
+       Break the background properties out to avoid the CSS parser error.
+       This sets:
+         - Primary blue (#0052CC) as the background color
+         - A white-ish stroke SVG for the hamburger icon
+         - No-repeat, centered positioning, and a 1.75rem size
+    */
+    background-color: #0052CC;
+    background-image: url("data:image/svg+xml,%3csvg%20xmlns%3d%27http%3a//www.w3.org/2000/svg%27%20viewBox%3d%270%200%2030%2030%27%3e%3cpath%20stroke%3d%27rgba%28245%2c%20247%2c%20250%2c%200.55%29%27%20stroke-linecap%3d%27round%27%20stroke-miterlimit%3d%2710%27%20stroke-width%3d%272%27%20d%3d%27M4%207h22M4%2015h22M4%2023h22%27/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1.75rem;
 }
 
 .navbar-toggler:checked {
-    background-color: rgba(255, 255, 255, 0.5);
+    /* When toggled, change to teal so the user knows it’s active */
+    background-color: #2DC5A1;
 }
 
+/* TOP NAV AREA */
 .top-row {
     min-height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    /* Use the primary brand blue for the navbar background */
+    background-color: #0052CC;
 }
 
+/* BRAND TITLE INSIDE NAV */
 .navbar-brand {
     font-size: 1.1rem;
+    /* Set the text color to off-white for visibility */
+    color: #F5F7FA;
 }
 
+/* ICON CLASSES (for your built-in SVGs) */
 .bi {
     display: inline-block;
     position: relative;
@@ -34,53 +56,60 @@
     background-size: cover;
 }
 
+/* Example: Keep the SVG fill white so it shows up on a blue background */
 .bi-house-door-fill-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-house-door-fill' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5Z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27white%27%20class%3D%27bi%20bi-house-door-fill%27%20viewBox%3D%270%200%2016%2016%27%3E%3Cpath%20d%3D%27M6.5%2014.5v-3.505c0-.245.25-.495.5-.495h2c.25%200%20.5.25.5.5v3.5a.5.5%200%200%200%20.5.5h4a.5.5%200%200%200%20.5-.5v-7a.5.5%200%200%200-.146-.354L13%205.793V2.5a.5.5%200%200%200-.5-.5h-1a.5.5%200%200%200-.5.5v1.293L8.354%201.146a.5.5%200%200%200-.708%200l-6%206A.5.5%200%200%200%201.5%207.5v7a.5.5%200%200%200%20.5.5h4a.5.5%200%200%200%20.5-.5Z%27/%3E%3C/svg%3E");
 }
 
 .bi-plus-square-fill-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-plus-square-fill' viewBox='0 0 16 16'%3E%3Cpath d='M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27white%27%20class%3D%27bi%20bi-plus-square-fill%27%20viewBox%3D%270%200%2016%2016%27%3E%3Cpath%20d%3D%27M2%200a2%202%200%200%200-2%202v12a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V2a2%202%200%200%200-2-2H2zm6.5%204.5v3h3a.5.5%200%200%201%200%201h-3v3a.5.5%200%200%201-1%200v-3h-3a.5.5%200%200%201%200-1h3v-3a.5.5%200%200%201%201%200z%27/%3E%3C/svg%3E");
 }
 
 .bi-list-nested-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27white%27%20class%3D%27bi%20bi-list-nested%27%20viewBox%3D%270%200%2016%2016%27%3E%3Cpath%20fill-rule%3D%27evenodd%27%20d%3D%27M4.5%2011.5A.5.5%200%200%201%205%2011h10a.5.5%200%200%201%200%201H5a.5.5%200%200%201-.5-.5zm-2-4A.5.5%200%200%201%203%207h10a.5.5%200%200%201%200%201H3a.5.5%200%200%201-.5-.5zm-2-4A.5.5%200%200%201%201%203h10a.5.5%200%200%201%200%201H1a.5.5%200%200%201-.5-.5z%27/%3E%3C/svg%3E");
 }
 
+/* NAV ITEMS */
 .nav-item {
     font-size: 0.9rem;
     padding-bottom: 0.5rem;
 }
 
-    .nav-item:first-of-type {
-        padding-top: 1rem;
-    }
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
 
-    .nav-item:last-of-type {
-        padding-bottom: 1rem;
-    }
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
 
-    .nav-item ::deep .nav-link {
-        color: #d7d7d7;
-        background: none;
-        border: none;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-        width: 100%;
-    }
+/* LINK STYLING */
+.nav-item ::deep .nav-link {
+    /* Off-white text to contrast with the blue background */
+    color: #F5F7FA;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    line-height: 3rem;
+    width: 100%;
+}
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
+    /* A slight teal overlay + white text gives an active state */
+    background-color: rgba(45, 197, 161, 0.37);
+    color: #FFFFFF;
 }
 
 .nav-item ::deep .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
+    /* Subtle hover effect using teal alpha */
+    background-color: rgba(45, 197, 161, 0.2);
+    color: #FFFFFF;
 }
 
+/* NAV SCROLLABLE (Collapsible area on mobile) */
 .nav-scrollable {
     display: none;
 }
@@ -89,16 +118,14 @@
     display: block;
 }
 
+/* WIDE SCREENS: show the nav sidebar always */
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
     }
 
     .nav-scrollable {
-        /* Never collapse the sidebar for wide screens */
         display: block;
-
-        /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
