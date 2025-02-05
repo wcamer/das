@@ -1,11 +1,13 @@
 ﻿@rendermode InteractiveServer
 @*
-    Whenver a new page is created, add the nav in the logged in nav section or dr logged in nav section.
+    Whenever a new page is created, add the nav in the logged-in nav section or dr logged-in nav section.
 *@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">DAS</a>
+        <a class="navbar-brand" href="">
+            <img src="/logo.png" alt="DocNow Logo" style="height: 4rem;" />
+        </a>
     </div>
 </div>
 
@@ -25,14 +27,10 @@
 
 
 
-
-        @*Once auth is figured out, put the condition in the if statement to check which profile type is logged in. *@
-        @*Change if statement below to check if any profile is logged in.*@
-
+        @* Logged-in checks *@
         @if (profileType == "Patient" || profileType == "Associate" || profileType == "Doctor" || profileType ==
         "Admin")
         {
-            @* <h1>Hello @profileType</h1> *@
             @*Logged in Nav Items will go here*@
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="dashboard">
@@ -43,8 +41,7 @@
 
         }
 
-
-        @* if statement to check if Patient is logged in*@
+        @* Patient-specific nav items *@
         @if (profileType == "Patient")
         {
             <div class="nav-item px-3">
@@ -65,10 +62,9 @@
                     <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Add Group Member
                 </NavLink>
             </div>
-
         }
 
-        @* if statement to check if DR or Asscociate is logged in*@
+        @* Doctor or Associate-specific nav items *@
         @if (profileType == "Associate" || profileType == "Doctor")
         {
 
@@ -84,26 +80,19 @@
                 </NavLink>
             </div>
 
-
         }
 
-        @*if statement to check if Admin is logged in*@
+        @* Admin-specific nav items *@
         @if (profileType == "Admin")
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="createAccountSP">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Create New S.P.
-                </NavLink>
-            </div>
+
 
         }
-
 
     </nav>
 </div>
 
 @code {
-
     private string profileType = "Non-User";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

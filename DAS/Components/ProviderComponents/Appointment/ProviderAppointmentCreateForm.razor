@@ -208,13 +208,22 @@ else
     // Called when the date picker value changes.
     private async Task OnDateChanged(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e.Value?.ToString(), out DateTime newDate))
+        // Use a fallback string if e.Value is null to avoid CS8629 warning.
+        var inputValue = e.Value?.ToString() ?? "";
+        if (DateTime.TryParse(inputValue, out DateTime newDate))
         {
             SelectedDate = newDate;
             NewAppointment.Date = newDate;
+
             await AppState.LoadListsAsync();
             allAppointments = AppState.OrderedAppointments ?? new List<Appointment>();
+
             CheckAvailableTimeSlots();
+        }
+        else
+        {
+            // e.Value was null or failed to parse.
+            Message = "Invalid date selection. Please pick a valid date.";
         }
     }
 
