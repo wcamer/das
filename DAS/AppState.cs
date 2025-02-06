@@ -109,6 +109,8 @@ public class AppState
     } // end of GetAppointmentById function
 
 
+
+
     //Edit Existing appointment info
     public async Task<bool> EditAppointment(int appointmentId, int userId, Appointment editedAppointment)
     {
@@ -566,7 +568,48 @@ public class AppState
 
     //  ------------------------Service Providers Funtions Section--------------
 
+    //This is specifically for Service Providers to get appointments by appointment Id
+    public async Task<Appointment?> SpGetAppointmentById(int appointmentId)
+    {
+        //This will find a specific appointment
+        var appointment = await _dbContext.Appointments.SingleOrDefaultAsync(a => a.AppointmentId == appointmentId);
 
+        //If the appointment is null it means it wasn't found
+        if (appointment == null)
+        {
+            return null;
+        }
+        //If appointment was found then it will return the Appointment object
+        else
+        {
+            return appointment;
+        }
+
+    } // end of SpGetAppointmentById function
+
+    //This is for Service Providers to edit existing appointment data
+    public async Task<bool> SpEditAppointment(int appointmentId, int userId, Appointment editedAppointment)
+    {
+        var appointment = await _dbContext.Appointments.SingleOrDefaultAsync(a => a.AppointmentId == appointmentId);
+        if (appointment == null)
+        {
+            return false;
+        }
+        else
+        {
+            appointment.Date = editedAppointment.Date;
+            appointment.Time = editedAppointment.Time;
+            appointment.Name = editedAppointment.Name;
+            appointment.PatientId = editedAppointment.PatientId;
+            appointment.AppointSetterId = userId;
+
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+
+    } // End of SpEditAppointment function
 
     public async Task<bool> CreateNewDoctorNote(int docId, DoctorNote dn)
     {
@@ -635,7 +678,7 @@ public class AppState
         }
     }
 
-        //This will return a service provider based on a given user's id for security
+    //This will return a service provider based on a given user's id for security
     public async Task<ServiceProviders?> GetServiceProviderById(int userId)
     {
         try
