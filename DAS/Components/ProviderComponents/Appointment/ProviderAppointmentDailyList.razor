@@ -1,4 +1,3 @@
-@page "/sp-appointment-daily-list"
 @namespace DAS.Components.ProviderComponents.Appointment
 @using DAS.Models
 @inject AppState AppState
@@ -6,7 +5,8 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-@if (AppState.OrderedAppointments == null || !AppState.OrderedAppointments.Any(a => a.Date.Date == SelectedDate.Date))
+@if (AppState.OrderedAppointments == null ||
+!AppState.OrderedAppointments.Any(a => a.Date.Date == SelectedDate.Date))
 {
     <p>No appointments scheduled for @SelectedDate.ToString("MM/dd/yyyy").</p>
 }
@@ -36,8 +36,9 @@ else
                     <td>
                         @if (ShowCancelButton && appt.Status != "Canceled")
                         {
-                            <button class="btn btn-danger btn-sm"
-                                @onclick="() => OnCancelAppointment.InvokeAsync(appt)">Cancel</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => OnCancelAppointment.InvokeAsync(appt)">
+                                Cancel
+                            </button>
                         }
                         else if (appt.Status == "Canceled")
                         {
