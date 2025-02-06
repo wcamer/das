@@ -16,11 +16,6 @@
 }
 else
 {
-    @* <h1>Currently newAppointment.Date = @newAppointment.Date.ToString("MM/dd/yyyy")</h1>
-    <h2>Changetrigger = @changeTrigger</h2> *@
-    @* <button @onclick="(() => GetAvailableSlots(newAppointment.Date) )">
-            Check Availability For: @newAppointment.Date.ToString("MM/dd/yyyy")
-    </button> *@
     //changeTrigger will default to today's date and if they don't match then we will update the available slots for the new day and update changeTrigger's value
     @if(changeTrigger != newAppointment.Date)
     {
@@ -73,7 +68,6 @@ else
                     @* @if(p.ProfileId == 1 || p.PatientId == 1) *@
                     @if(p.ProfileId == userId)
                     {
-                        @* <option value="@p.PatientId">@p.FirstName @p.LastName</option> *@
                         <option value="@p.PatientId">@p.FirstName @p.LastName</option>
 
                     }

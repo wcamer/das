@@ -7,36 +7,14 @@
 <PageTitle>Patient Dashboard</PageTitle>
 
 <h2>Patient Dashboard</h2>
-@if(userId <= 0 || profileType != "Patient")
+@if (userId <= 0 || profileType != "Patient")
 {
     <p>-------- Please login to view --------</p>
 }
-else 
+else
 {
     <div>
         <PatientProfile />
-        @* 
-        example of the component contents
-        <h2>Account Information</h2>
-        <div>
-            <div>
-                <span>Name: Albert Wesker </span>
-            </div>
-
-            <div>
-                <span>Telephone: 1234567890</span>
-            </div>
-
-
-            <div>
-                <span>Insurance: Umbrella Co. </span>
-            </div>
-
-            <div>
-                <span>Policy: 12345</span>
-            </div>
-
-        </div> *@
     </div>
 
     <div>
@@ -63,9 +41,7 @@ else
 
         <div>
             <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
-            @* <button @onclick="() => signOutWindow = true">Sign out</button> *@
-
-            @if(signOutWindow == true)
+            @if (signOutWindow == true)
             {
                 <div>
                     <p>@message</p>
@@ -76,7 +52,7 @@ else
             }
         </div>
 
-    
+
 
     </div>
 
@@ -84,178 +60,78 @@ else
         <div>
             <h2>Patient Group</h2>
             <PatientGroup />
-            @* <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        Name
-                    </th>
-                    <th>
-                        Options
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Cloud Strife
-                    </td>
-                    <td>
-                        <button>Edit</button> 
-                        <button>Details</button>
-                    </td>
-                    
-                </tr>
-            </tbody>
-        </table> *@
         </div>
         <div>
             <h2>Upcoming Appointments</h2>
             <PatientUpcomingAppointments />
-            @* <table class="table">
-                <thead>
-                    <tr>
-                        <th>
-                            Name
-                        </th>
-                        <th>
-                            Appointment Date
-                        </th>
-                        <th>
-                            Time
-                        </th>
-                        <th>
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr>
-                        <td>
-                            Cloud Strife
-                        </td>
-                        <td>
-                            01/15/25
-                        </td>
-                        <td>
-                            7:00 AM
-                        </td>
-                        <td>
-                            Pending
-                        </td>
-                        <td>
-                            <button>Edit</button>
-                        </td>
-
-                        
-                    </tr>
-                </tbody>
-            </table> *@
-
         </div>
         <div>
             <h2>Appointment History</h2>
             <PatientAppointmentHistory />
-                @* <table class="table">
-                    <thead>
-                        <tr>
-                            <th>
-                                Name
-                            </th>
-                            <th>
-                                Appointment Date
-                            </th>
-                        
-                            <th>
-                                Status
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            <td>
-                                Cloud Strife
-                            </td>
-
-                            <td>
-                                01/11/25
-                            </td>
-                            
-                            <td>
-                                Completed
-                            </td>
-
-                            
-                        </tr>
-                    </tbody>
-                </table> *@
         </div>
 
 
-    
-    
-        
+
+
+
     </div>
 }
 
-@code{
+@code {
 
     public int userId = -1;
     private string profileType = "Non-user";
 
     private bool signOutWindow = false;
-    //private bool signOutSuccess = false;
     private bool isDisabled = false;
     private string? message = "Are you sure you want to log out?";
 
     //protected override async Task OnInitializedAsync()
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
             var foundUser = await UserService.GetLoggedInUser();
-            Console.WriteLine($"*****************foundUser:{foundUser}");
+            //Console.WriteLine($"*****************foundUser:{foundUser}");
 
             if (foundUser != null)
             {
                 userId = foundUser.UserId;
                 profileType = foundUser.Type;
-                Console.WriteLine($"*****************updated userId:{userId}");
+                //Console.WriteLine($"*****************updated userId:{userId}");
                 StateHasChanged();
             }
             else
             {
                 //If there is no user found then we don't have to perform the rest of the function
-                Console.WriteLine($"*****************foundUser is null userId:{userId}");
-                
+                // Console.WriteLine($"*****************foundUser is null userId:{userId}");
+
                 return;
             }
         }
-        
-        
+
+
     }
 
-    
+
 
     private async Task SignOut()
     {
         isDisabled = true;
         await UserService.DeleteLoggedInUser();
 
-        message = "Successfully signed out.  Returning to home page";
+        message = "Successfully signed out. Returning to home page";
         StateHasChanged();
         await Task.Delay(5000);
+
         //NavigationManager.NavigateTo("/", forceLoad: true);
         //Not an elegant solution but will work for now
         NavigationManager.NavigateTo("/", forceLoad: true);
 
     }
 
-    
 
-   
+
+
 
 }
