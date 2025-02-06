@@ -68,11 +68,12 @@
                         {
                             @foreach (var appointment in FilteredAppointments)
                             {
-                                    var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
-
+                                    var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
+                                    var infoRoute = $"/patient-details/{appointment.PatientId}";
                                     <tr>
                                         <td>
                                             @(appointment.Name)
+                                            
                                         </td>
                                         <td>
                                             @(appointment.Date.ToString("MM/dd/yyyy"))
@@ -94,6 +95,11 @@
                                                 @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
                                                 <NavLink class="nav-link" href=@editRoute>
                                                     <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                                </NavLink>
+                                            </button>
+                                            <button>
+                                                <NavLink class="nav-link" href=@infoRoute>
+                                                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Patient Info/Notes
                                                 </NavLink>
                                             </button>
                                             @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
