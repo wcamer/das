@@ -19,12 +19,12 @@
         <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
             @(ShowAppointments ? "Hide Appointments" : "Show Appointments")
         </button>
-        @if(ShowAppointments)
+        @if (ShowAppointments)
         {
 
             @if (appointments.Any())
             {
-                
+
                 <table class="table">
                     <thead>
                         <tr>
@@ -34,25 +34,25 @@
                             <th>
                                 Appointment Date
                                 <select @bind="SearchDate">
-                                    <option value="">All Dates</option> 
+                                    <option value="">All Dates</option>
                                     <option value="@DateTime.Today.ToString("MM/dd/yyyy")">Today's Date</option>
                                     @foreach (var date in appointments.Select(a => a.Date.ToString("MM/dd/yyyy")).Distinct())
                                     {
                                         <option value="@date">@date</option>
-                                    } 
+                                    }
                                 </select>
                             </th>
                             <th>
                                 Time
                             </th>
                             <th>
-                                Status 
+                                Status
                                 <select @bind="SearchStatus">
-                                    <option value="">Search by Status</option> 
+                                    <option value="">Search by Status</option>
                                     @foreach (var status in appointments.Select(a => a.Status).Distinct())
                                     {
                                         <option value="@status">@status</option>
-                                    } 
+                                    }
                                 </select>
                             </th>
                             <th></th>
@@ -68,6 +68,7 @@
                         {
                             @foreach (var appointment in FilteredAppointments)
                             {
+
                                     var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
                                     var infoRoute = $"/patient-details/{appointment.PatientId}";
                                     <tr>
@@ -113,7 +114,7 @@
                                             @(appointment.AppointmentId)
                                         </td>
 
-                                    </tr>
+                                    </tr>                         
                             }
                         }
                     </tbody>
@@ -130,26 +131,25 @@
 </div>
 
 @code {
-
     private bool ShowAppointments = false; // Controls visibility
 
     private void ToggleAppointments()
     {
         ShowAppointments = !ShowAppointments;
     }
-    
-    private string SearchName {get; set;} = "";
-    private string SearchStatus {get; set;} = "";
-    private string SearchDate {get; set;} = "";
+
+    private string SearchName { get; set; } = "";
+    private string SearchStatus { get; set; } = "";
+    private string SearchDate { get; set; } = "";
 
     private List<Appointment> appointments = [];
 
     private IEnumerable<Appointment> FilteredAppointments =>
-        appointments.Where(a =>
-            (string.IsNullOrWhiteSpace(SearchName) || a.Name.Contains(SearchName, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(SearchStatus) || a.Status == SearchStatus) &&
-            (string.IsNullOrWhiteSpace(SearchDate) || a.Date.ToString("MM/dd/yyyy") == SearchDate)
-        );
+    appointments.Where(a =>
+    (string.IsNullOrWhiteSpace(SearchName) || a.Name.Contains(SearchName, StringComparison.OrdinalIgnoreCase)) &&
+    (string.IsNullOrWhiteSpace(SearchStatus) || a.Status == SearchStatus) &&
+    (string.IsNullOrWhiteSpace(SearchDate) || a.Date.ToString("MM/dd/yyyy") == SearchDate)
+    );
     private int userId = -1;
 
 

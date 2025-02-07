@@ -100,9 +100,6 @@ else
 
 
     </EditForm>
-    @* <div>
-        <button @onclick=signOut>log out</button>
-    </div> *@
 }
 
 @code {
@@ -252,19 +249,7 @@ else
 
     }
 
-    //this will go somewhere else but works
-    @* public async Task signOut()
-    {
-        await JSRuntime.InvokeVoidAsync("logOut");
-        Console.WriteLine("Log out successful");
-    } *@
 
-    @* protected override async Task OnInitializedAsync()
-    {
-
-
-
-    } *@
 
     private async Task SubmitEditedPatientProfile(TemporaryExtentedProfile tEProfile)
     {
@@ -273,7 +258,6 @@ else
 
         //get existing profile
         var selectedProfile = profileList.FirstOrDefault(p => p.ProfileId == tEProfile.ProfileId);
-       
         
         
         if(selectedProfile != null )
@@ -362,8 +346,8 @@ else
         //test if the deletion failed
         @* var profileDeletionCompleted = false; *@
 
-       if (profileDeletionCompleted == true)
-       {
+        if (profileDeletionCompleted == true)
+        {
             //This will log the user out and delete any persisting login info
             await UserService.DeleteLoggedInUser();
             message = "Deletion Completed.  Returning to Home Page";
@@ -371,18 +355,19 @@ else
             await Task.Delay(5000);
             //This is for testing to see if the navigation will redirect after it is completed
             //This worked
-            NavigationManager.NavigateTo("/");
-       }
-       else
-       {
+            //NavigationManager.NavigateTo("/");
+
+            //This is a temporary solution to help the NavMenu be dynamic
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
             message = "Something went wrong.  Please try again at a later time.  Deletion Operation canceled";
             deleteWarningFlag = false;
-       }
+        }
     }// end of ProcessDeletePatientProfile function
 
-//johonny patientid 16 profileid 8
 
-//jimm zzz patientId 18 profile id 8
 
 
 

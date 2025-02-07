@@ -34,7 +34,7 @@
                         </th>
                         <th></th>
                         @* this is for testing *@
-                        <th>Appointment Id</th>
+                        @* <th>Appointment Id</th> *@
                     </tr>
                 </thead>
                 <tbody>
@@ -69,25 +69,17 @@
                                     @* The edit and delete options will depend on what the status is.  
                                             If it's pending, then edit and delete will be displayed, 
                                             else then it will show a message that it isn't changeable  *@
-                                    @*  hardcooded for Albert wesker*@
-
                                     <td>
                                         <button>
-                                            @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
                                             <NavLink class="nav-link" href=@editRoute>
                                                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
                                             </NavLink>
                                         </button>
-                                        @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
-                                        @* <a value =@AppState.editAppointmentTarget></a> *@
-                                        @* <a asp-action="Edit">Edit</a> *@
-                                        @* <a asp-action="Delete">Delete</a> | *@
-                                        @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
                                     </td>
                                     @* for dev testing *@
-                                    <td>
+                                    @* <td>
                                         @(appointment.AppointmentId)
-                                    </td>
+                                    </td> *@
 
                                 </tr>
                             }
@@ -115,16 +107,6 @@
 
     private List<Appointment> appointments = [];
     private int userId = -1;
-
-
-
-
-    @* private int loggedInUser = 0; *@
-
-    @* private string? result; *@
-
-
-
 
 
     //protected override async Task OnInitializedAsync()
@@ -165,63 +147,7 @@
         }
 
 
-
-
-
-
-
-
-
-    }
-
-
-    //Onafterrenderasync was here
-
-
-    //ChangEditAppointmentTargett was here
-
-
-    //SAveEditAppointment Target was here
-
-
-
-    //testing purposes
-    @* private async Task<int> GetEditAppointmentTarget()
-    {
-        //returns items as a string always
-        var targetString = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "AppointmentTarget");
-
-        var target = int.TryParse(targetString, out int id);
-        if (target == true)
-        {
-
-            Console.WriteLine($"{id} ^^^^^^^^^^^^^^^^^^^");
-
-            return id;
-
-        }
-        else
-        {
-            Console.WriteLine($"{id} ?????????????????????????");
-            return 0;
-        }
-
-    } *@
-
-
-    //LOGIN stuff
-
-    //GetLoggedInuser was here
-
-
-
-    // SetLoggedInuser was here
-
-
-
-
-
-
+    } // end of OnAfterRenderAsync(bool firstRender)
 
 
 

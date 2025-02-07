@@ -1,4 +1,4 @@
-@namespace DAS.Components.ProviderComponents.Appointment
+@namespace DAS.Components.ServiceProviderComponents.Appointment
 @using DAS.Models
 @inject AppState AppState
 @inject NavigationManager NavigationManager
@@ -20,7 +20,7 @@ else
                 <th>Time</th>
                 <th>Status</th>
                 <th>Actions</th>
-                <th>AppointmentId</th>
+                @* <th>AppointmentId</th> *@
             </tr>
         </thead>
         <tbody>
@@ -29,6 +29,8 @@ else
            .OrderBy(a => a.Time))
             {
                 <tr style="cursor: pointer;" @onclick="() => NavigateToEdit(appt.AppointmentId)">
+                    @* <tr style="cursor: pointer;"> *@
+
                     <td>@appt.Name</td>
                     <td>@appt.Date.ToString("MM/dd/yyyy")</td>
                     <td>@appt.Time</td>
@@ -36,6 +38,10 @@ else
                     <td>
                         @if (ShowCancelButton && appt.Status != "Canceled")
                         {
+                            <button class="btn btn-primary btn-sm" @onclick="() => NavigateToEdit(appt.AppointmentId)">
+                                Edit
+                            </button>
+
                             <button class="btn btn-danger btn-sm" @onclick="() => OnCancelAppointment.InvokeAsync(appt)">
                                 Cancel
                             </button>
@@ -45,7 +51,7 @@ else
                             <em>(Canceled)</em>
                         }
                     </td>
-                    <td>@appt.AppointmentId</td>
+                    @* <td>@appt.AppointmentId</td> *@
                 </tr>
             }
         </tbody>

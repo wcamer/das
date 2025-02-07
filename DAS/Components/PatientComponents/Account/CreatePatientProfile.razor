@@ -234,11 +234,6 @@
                     StateHasChanged();
                 }
 
-
-
-
-
-
             }
 
         }
@@ -254,21 +249,8 @@
         //send user back the the home page but can be changed to send back to customer's dashboard
         @* NavigationManager.NavigateTo("/"); *@
 
-    }
+    }//end of HandleValidSubmit()
 
-    //this will go somewhere else but works
-    @* public async Task signOut()
-    {
-        await JSRuntime.InvokeVoidAsync("logOut");
-        Console.WriteLine("Log out successful");
-    } *@
-
-    @* protected override async Task OnInitializedAsync()
-    {
-
-
-
-    } *@
 
     private async Task CreateNewPatientProfile()
     {
@@ -297,11 +279,7 @@
                 Password = hashedPassword
 
             };
-       
-
         
-
-       
             @* await AppState.LoadListsAsync(); *@
 
             bool duplicateEmailChecker = AppState.Profiles.Any(p => p.Email == newProfile.Email);
@@ -335,8 +313,6 @@
                     await Task.Delay(5000);
 
 
-
-
                     await HandleValidSubmit();
 
                 }
@@ -357,7 +333,7 @@
             return;
         }
 
-    }
+    }// end of CreateNewPatientProfile()
 
 
-}
+}@*End of @code block  *@

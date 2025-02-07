@@ -96,17 +96,11 @@ else
                 return;
             }
 
-            Console.WriteLine($"*****************updated userId:{userId}");
 
 
-            @* await AppState.LoadListsAsync();
-            StateHasChanged(); *@
 
             //This will be used to get the user's profile based on their profileId provided to the userId variable
             var userProfileData = await AppState.GetProfileById(userId);
-
-            //Console.WriteLine($"*****************userprofileData:{userProfileData}");
-            //Console.WriteLine($"*****************userprofileData:{userProfileData.FirstName} profileName {profile.FirstName}");
 
             //This will make sure the user's profile is found
             if (userProfileData != null)
@@ -127,13 +121,13 @@ else
                     profile.InsuranceCompany = userPatientData.InsuranceCompany;
                     profile.InsurancePolicyNumber = userPatientData.InsurancePolicyNumber;
                     @* StateHasChanged(); *@
-                    Console.WriteLine($">>>>>>>>>>>>profileName {profile.FirstName} <-----");
+                    //Console.WriteLine($">>>>>>>>>>>>profileName {profile.FirstName} <-----");
 
                 }
                 //current problem is that there is no patient info being found
-                else
+                @* else
                 {
-                    @* profile.ProfileId = userProfileData.ProfileId;
+                    profile.ProfileId = userProfileData.ProfileId;
 
                     profile.FirstName = userProfileData.FirstName;
                     profile.LastName = userProfileData.LastName;
@@ -144,23 +138,17 @@ else
                     profile.ZipCode = userProfileData.ZipCode;
                     profile.Email = userProfileData.Email;
                     profile.InsuranceCompany = "Uninsured";
-                    profile.InsurancePolicyNumber = "uninsured"; *@
+                    profile.InsurancePolicyNumber = "uninsured";
 
                     Console.WriteLine($">>>>>>>>>>> we ar missing userpatientdata <-----");
 
-                }
+                } *@
                 StateHasChanged();
             }
 
         }// end of firstRender conditional
 
 
-
-
-
-
-
-
-    }
+    }// end of OnAfterRenderAsync(bool firstRender)
 
 }@* end of @code block *@

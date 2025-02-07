@@ -1,0 +1,389 @@
+@page "/sp-edit-appointment/{id:int}"
+@using DAS.Components.ServiceProviderComponents.Appointment
+@using DAS.Models
+@using System.Security.Claims
+@* @using Microsoft.AspNetCore.Components.Authorization *@
+@using Microsoft.AspNetCore.Components.Forms
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@* @inject AuthenticationStateProvider AuthenticationStateProvider *@
+@rendermode InteractiveServer
+
+<h2>Edit Appointment</h2>
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-info">@Message</div>
+}
+@if(profileType != "Doctor" && profileType != "Associate")
+{
+    <p>------Access Denied @profileType-----</p>
+}
+else
+{
+    @if (appointment == null)
+    {
+        <p>Loading appointment...</p>
+    }
+    else
+    {
+        @if(changeTrigger != appointment.Date)
+        {
+            GetAvailableSlots();
+            if(AvailableSlots.Any())
+            {
+                appointment.Time = AvailableSlots[0].Time;
+            }
+            changeTrigger = appointment.Date;
+        }
+        
+        <EditForm Model="@appointment"  OnValidSubmit="UpdateAppointment">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label" for="patientSelect">Select Patient:</label>
+                <InputSelect @bind-Value="appointment.PatientId" id="patientSelect" class="form-control">
+                    <option value="">-- Choose a Patient --</option>
+                    @if (patients != null && patients.Any())
+                    {
+                        @foreach (var p in patients)
+                        {
+                            <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
+                        }
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => appointment.PatientId)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Date:</label>
+                <InputDate @bind-Value="appointment.Date" class="form-control" />
+                <ValidationMessage For="@(() => appointment.Date)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Current Appointment Time:</label>
+                <InputText @bind-Value="oldAppointment" class="form-control" disabled />
+                
+            </div>
+            
+            <div>
+                <label>Available Times:</label>
+                <InputSelect @bind-value="appointment.Time" >
+                    <option>Pick A Time </option>
+                    @foreach(var slot in AvailableSlots)
+                    {
+                        <option value="@slot.Time">@slot.Time</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => appointment.Time)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status:</label>
+                <InputSelect @bind-Value="appointment.Status" class="form-control">
+                    <option value="Pending">Pending</option>
+                    <option value="Checked In">Checked In</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Canceled">Canceled</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => appointment.Status)" />
+            </div>
+
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <button type="button" class="btn btn-danger ms-2" @onclick="DeleteAppointment">Delete Appointment</button>
+        </EditForm>
+    }
+}
+
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    @* private Appointment? appointment; *@
+    private Appointment appointment = new Appointment
+    {
+            PatientId = -1, // default part to check to see if user is logged in or not
+            Name = "FirstName LastName",
+            Date = DateTime.Now,
+            Time = "7:00 PM",
+            Status = "Pending",
+            AppointSetterId = -1 //default part of check to see if user is logged in
+
+    };
+
+    private string? oldAppointment;
+    private List<Patient> patients = new();
+    private string? Message;
+    private int providerId = -1; // For testing, we set a dummy provider ID
+    private string? profileType;
+
+    private DateTime changeTrigger = DateTime.Now;
+    public class AppointmentSlot
+    {
+        public string Time { get; set; } = string.Empty;
+        public int AvailableCount { get; set; }
+    }
+
+    private List<AppointmentSlot> AvailableSlots {get; set;} = new List<AppointmentSlot>();
+
+
+    // For testing purposes, we comment out the authentication checks.
+    /*
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask is not null)
+        {
+            var authState = await authenticationStateTask;
+            var user = authState.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                // Optionally, check role here.
+                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out providerId))
+                {
+                    // Provider ID obtained from authentication.
+                }
+                else
+                {
+                    Message = "Provider ID could not be determined or is invalid.";
+                    return;
+                }
+            }
+            else
+            {
+                Message = "You are not authenticated.";
+                return;
+            }
+        }
+        else
+        {
+            Message = "Authentication state is not available.";
+            return;
+        }
+        // ... (rest of the code)
+    }
+    */
+
+    // Instead, for testing, we skip authentication and set a dummy provider ID.
+    @* protected override async Task OnInitializedAsync()
+    {
+        providerId = 1;  // Dummy provider ID for testing
+
+        // Load the list of patients.
+        await AppState.LoadListsAsync();
+        patients = AppState.Patients ?? new List<Patient>();
+
+        // Load the appointment (if it exists) for the given id and provider.
+        appointment = await AppState.GetAppointmentById(id, providerId);
+        if (appointment == null)
+        {
+            Message = "Appointment not found or you are not authorized to edit it.";
+        }
+    } *@
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Loading up the lists from the DB
+        await AppState.LoadListsAsync();
+        patients = AppState.Patients ;
+
+        var foundAppointment = await AppState.SpGetAppointmentById(id);
+        if(foundAppointment != null)
+        {
+            appointment = foundAppointment;
+            oldAppointment = foundAppointment.Time;
+            StateHasChanged();
+
+        }
+        else
+        {
+            Message = "Could not find appointment...";
+        }
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+
+
+            @* //Loading up the lists from the DB
+            await AppState.LoadListsAsync();
+            patients = AppState.Patients ; *@
+
+        
+            //find the current user creds
+            var foundUser = await UserService.GetLoggedInUser();
+            if(foundUser != null )
+            {
+                //userId = foundUser.UserId;
+                providerId = foundUser.UserId;
+                profileType = foundUser.Type;
+                StateHasChanged();
+            }
+            else
+            {
+                return;
+            }
+
+            @* var foundAppointment = await AppState.SpGetAppointmentById(id);
+            if(foundAppointment != null)
+            {
+                appointment = foundAppointment;
+                oldAppointment = foundAppointment.Time;
+                StateHasChanged();
+
+            }
+            else
+            {
+                Message = "Could not find appointment...";
+            } *@
+        }
+        
+    }
+
+private void GetAvailableSlots()
+    {
+        Message ="";
+        AvailableSlots.Clear(); // this will clear out the available slots list when the day changes
+
+        var currentDay = AppState.mountainTimeNow;
+        
+        var chosenDay = appointment.Date;
+        List<Appointment> dayAppointments = new List<Appointment>();
+
+        //This is a check to ensure that no past appointments are able to be seen as available
+        //If the chosenDay is in the past compared to today...
+        if(chosenDay.Date < currentDay.Date)
+        {
+            Message = "Please select today's date or a future date";
+            return;
+
+        }
+        // This will handle the same day appointments
+        else if(chosenDay.ToString("MM/dd/yyyy") == currentDay.ToString("MM/dd/yyyy"))
+        {
+            var currentTime = AppState.mountainTimeNow.Hour;
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+
+                //Only will show relevant hours that are available same-day and not hours that have passed
+                if(numOfSchedAppoints < 2 && hour > currentTime)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+        //This will handle all future days
+        else
+        {
+            dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+
+        
+            for (int hour = 0; hour <24; hour++)
+            {
+                string time = DateTime.Today.AddHours(hour).ToString("h:mm tt");
+                int numOfSchedAppoints = dayAppointments.Count(a => a.Time == time);
+
+                if(numOfSchedAppoints < 2)
+                {
+                    AvailableSlots.Add(new AppointmentSlot {Time = time, 
+                    AvailableCount = 2 - numOfSchedAppoints});
+                
+                }
+                StateHasChanged();
+
+            }
+        }
+
+
+
+    } // end of GetAvailableSlots function
+
+
+    private async Task UpdateAppointment()
+    {
+        if (appointment == null)
+        {
+            Message = "No appointment data available.";
+            return;
+        }
+
+
+        if(string.IsNullOrEmpty(appointment.Time) || appointment.Time == "Pick A Time" )
+        {
+            Message = "Please select a time for the appointment";
+            return;
+        }
+
+        var currentDay = AppState.mountainTimeNow;
+        if(appointment.Date < currentDay.Date)
+        {
+            Message = "Please select either today's date or a date in the future";
+            return;
+        }
+        
+        var success = await AppState.SpEditAppointment(appointment.AppointmentId, providerId, appointment);
+        if (success)
+        {
+            GetAvailableSlots();
+            Message = "Appointment updated successfully.";
+            @* oldAppointment = new Appointment
+            {
+                Name = appointment.Name,
+                Date = appointment.Date,
+                Time = appointment.Time,
+                Status = appointment.Status
+            };  *@
+            oldAppointment = appointment.Time;
+            @* NavigationManager.NavigateTo("/sp-create-appointment"); *@
+        }
+        else
+        {
+            Message = "Failed to update appointment.";
+        }
+    }
+
+    private async Task DeleteAppointment()
+    {
+        if (appointment == null)
+        {
+            Message = "No appointment to delete.";
+            return;
+        }
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Are you sure you want to delete this appointment?" });
+        if (confirmed)
+        {
+            bool success = await AppState.DeletePatientAppointment(appointment.AppointmentId);
+            if (success)
+            {
+                Message = "Appointment deleted successfully.";
+                @* NavigationManager.NavigateTo("/sp-create-appointment"); *@
+                NavigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Message = "Failed to delete appointment.";
+            }
+        }
+    }
+}
