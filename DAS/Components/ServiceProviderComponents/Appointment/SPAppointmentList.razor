@@ -68,46 +68,53 @@
                         {
                             @foreach (var appointment in FilteredAppointments)
                             {
-                                var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
 
-                                <tr>
-                                    <td>
-                                        @(appointment.Name)
-                                    </td>
-                                    <td>
-                                        @(appointment.Date.ToString("MM/dd/yyyy"))
-                                    </td>
-                                    <td>
-                                        @(appointment.Time)
-                                    </td>
+                                    var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
+                                    var infoRoute = $"/patient-details/{appointment.PatientId}";
+                                    <tr>
+                                        <td>
+                                            @(appointment.Name)
+                                            
+                                        </td>
+                                        <td>
+                                            @(appointment.Date.ToString("MM/dd/yyyy"))
+                                        </td>
+                                        <td>
+                                            @(appointment.Time)
+                                        </td>
 
-                                    <td>
-                                        @(appointment.Status)
-                                    </td>
-                                    @* The edit and delete options will depend on what the status is.  
+                                        <td>
+                                            @(appointment.Status)
+                                        </td>
+                                        @* The edit and delete options will depend on what the status is.  
                                                 If it's pending, then edit and delete will be displayed, 
                                                 else then it will show a message that it isn't changeable  *@
-                                    @*  hardcooded for Albert wesker*@
+                                        @*  hardcooded for Albert wesker*@
 
-                                    <td>
-                                        <button>
-                                            @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
-                                            <NavLink class="nav-link" href=@editRoute>
-                                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
-                                            </NavLink>
-                                        </button>
-                                        @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
-                                        @* <a value =@AppState.editAppointmentTarget></a> *@
-                                        @* <a asp-action="Edit">Edit</a> *@
-                                        @* <a asp-action="Delete">Delete</a> | *@
-                                        @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
-                                    </td>
-                                    @* for dev testing *@
-                                    <td>
-                                        @(appointment.AppointmentId)
-                                    </td>
+                                        <td>
+                                            <button>
+                                                @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
+                                                <NavLink class="nav-link" href=@editRoute>
+                                                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                                </NavLink>
+                                            </button>
+                                            <button>
+                                                <NavLink class="nav-link" href=@infoRoute>
+                                                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Patient Info/Notes
+                                                </NavLink>
+                                            </button>
+                                            @* <button @onclick="() => SaveEditAppointmentTarget(appointment.AppointmentID)">Edit</button> *@
+                                            @* <a value =@AppState.editAppointmentTarget></a> *@
+                                            @* <a asp-action="Edit">Edit</a> *@
+                                            @* <a asp-action="Delete">Delete</a> | *@
+                                            @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
+                                        </td>
+                                        @* for dev testing *@
+                                        <td>
+                                            @(appointment.AppointmentId)
+                                        </td>
 
-                                </tr>
+                                    </tr>                         
                             }
                         }
                     </tbody>
