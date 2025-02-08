@@ -23,8 +23,13 @@
     <label>Email:</label>
     <InputText @bind-Value="loginModel.Email" type="email" disabled=@isFormDisabled />
 
+    <p></p>
+
     <label>Password:</label>
     <InputText @bind-Value="loginModel.Password" type="password" disabled=@isFormDisabled />
+    
+    <p></p>
+    
     <button>Login</button>
     @*if (activeUser == true)
     {

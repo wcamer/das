@@ -1,0 +1,79 @@
+/* Dashboard.razor.css */
+
+/* General Page Styling */
+:root {
+    --teal: #2DC5A1;
+    --blue: #0052CC;
+    --light-gray: #F5F7FA;
+    --dark-gray: #2D2D2D;
+    --white: #FFFFFF;
+}
+
+/* Container Styling */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--white);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+}
+
+/* Header Styling */
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: var(--blue);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+/* Login Message */
+p {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+/* Profile Type Specific Styling */
+.patient-dashboard,
+.sp-dashboard,
+.admin-dashboard {
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.patient-dashboard {
+    background-color: rgba(45, 197, 161, 0.1);
+    border-left: 5px solid var(--teal);
+}
+
+.sp-dashboard {
+    background-color: rgba(0, 82, 204, 0.1);
+    border-left: 5px solid var(--blue);
+}
+
+.admin-dashboard {
+    background-color: rgba(45, 45, 45, 0.1);
+    border-left: 5px solid var(--dark-gray);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+}

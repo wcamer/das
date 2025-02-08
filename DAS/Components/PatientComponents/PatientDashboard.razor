@@ -6,75 +6,46 @@
 
 <PageTitle>Patient Dashboard</PageTitle>
 
-<h2>Patient Dashboard</h2>
 @if (userId <= 0 || profileType != "Patient")
 {
     <p>-------- Please login to view --------</p>
 }
 else
 {
-    <div>
+    <div class="dashboard-container">
+        <div class="card patient-profile">
         <PatientProfile />
-    </div>
-
-    <div>
-        <h2>Options</h2>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/editProfile">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit Profile
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/createAppointment">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add Appointment
-            </NavLink>
         </div>
 
-
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/addGroupMember">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Add New Patient To Group
-            </NavLink>
-        </div>
-
-        <div>
+        <div class="card options-section">
+            <h2>Options</h2>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/editProfile">Edit Profile</NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/createAppointment">Add Appointment</NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/addGroupMember">Add New Patient To Group</NavLink>
+            </div>
             <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
-            @if (signOutWindow == true)
-            {
-                <div>
-                    <p>@message</p>
-                    <button @onclick="SignOut" disabled="@isDisabled">Yes</button>
-                    <button @onclick="@(() => { signOutWindow = false; })" disabled="@isDisabled">No</button>
-
-                </div>
-            }
         </div>
-
-
-
     </div>
 
-    <div>
-        <div>
-            <h2>Patient Group</h2>
-            <PatientGroup />
+    <div class="dashboard-container">
+            <div class="card patient-group">
+                <h2>Patient Group</h2>
+                <PatientGroup />
+            </div>
+            <div class="card appointments-section">
+                <h2>Upcoming Appointments</h2>
+                <PatientUpcomingAppointments />
+            </div>
+            <div class="card appointments-section">
+                <h2>Appointment History</h2>
+                <PatientAppointmentHistory />
+            </div>
         </div>
-        <div>
-            <h2>Upcoming Appointments</h2>
-            <PatientUpcomingAppointments />
-        </div>
-        <div>
-            <h2>Appointment History</h2>
-            <PatientAppointmentHistory />
-        </div>
-
-
-
-
-
-    </div>
 }
 
 @code {
