@@ -1,0 +1,87 @@
+@using DAS.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppState AppState
+@rendermode InteractiveServer
+
+<div>
+    @if (userId <= 0)
+    {
+        <p>-------- Login to view information --------</p>
+    }
+    else
+    {
+        @if (profiles.Any())
+        {
+            <table class="table">
+            <thead>
+                <th>Name</th>
+                <th>Account Type</th>
+                <th>Service Provider Id</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </thead>
+
+            <tbody>
+                @foreach (var profile in profiles)
+                {
+                    @*var infoRoute = $"/patient-details/{patient.PatientId}";*@
+                    <tr>
+                        <td>
+                            @(profile.FirstName + " " + profile.LastName)
+                        </td>
+                        <td>@(profile.Type)</td>
+                        <td>@(profile.Email)</td>
+                        <td>@(profile.ServiceProvidersId)</td>
+                        <td>
+                            @*<button>
+                                <NavLink class="nav-link" href=@infoRoute>
+                                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                </NavLink>
+                            </button>*@
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+
+            </table>
+        }
+        else 
+        {
+            <p>-------- No Profiles Found ---------</p>
+        }
+    }
+
+</div>
+
+
+@code
+{
+
+    private List<ServiceProviders> profiles = [];
+
+    private int userId = -1;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            var foundUser = await UserService.GetLoggedInUser();
+            if (foundUser != null)
+            {
+                userId = foundUser.UserId;
+            }
+            else
+            {
+                return;
+            }
+
+
+            //Gets data in the lists and synced up
+            await AppState.LoadListsAsync();
+            profiles = AppState.ServiceProviders;
+            StateHasChanged();
+            
+        }
+    }
+}

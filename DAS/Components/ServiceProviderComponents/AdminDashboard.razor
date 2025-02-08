@@ -1,34 +1,17 @@
 @using DAS.Components.ServiceProviderComponents.Account
-@using DAS.Components.ServiceProviderComponents.Appointment
-@using DAS.Components.PatientComponents.Account
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PageTitle>SP Dashboard</PageTitle>
+
+<PageTitle>Admin Dashboard</PageTitle>
 
 <div>
-    <SPProfile />
+    <SPProfile/>
 </div>
 
 <div>
-    <SPAppointmentList />
+    <SPList/>
 </div>
-
-<div>
-    <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
-        @(showAvailableAppointments ? "Hide Available Appointments" : "Show Available Appointments")
-    </button>
-    @if (showAvailableAppointments)
-    {
-        <AvailableAppointmentsToday />
-    }
-
-</div>
-
-<div>
-    <PatientList/>
-</div>
-
 
 <div>
     <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
@@ -45,23 +28,13 @@
     }
 </div>
 
-@code {
 
-    public int userId = -1;
-
-    private bool showAvailableAppointments = false;
-
-    private void ToggleAppointments()
-    {
-        showAvailableAppointments = !showAvailableAppointments;
-    }
-
+@code 
+{
     private bool signOutWindow = false;
     //private bool signOutSuccess = false;
     private bool isDisabled = false;
     private string? message = "Are you sure you want to log out?";
-
-
     private async Task SignOut()
     {
         isDisabled = true;
@@ -75,9 +48,4 @@
         NavigationManager.NavigateTo("/", forceLoad: true);
 
     }
-
-
-
-
-
 }

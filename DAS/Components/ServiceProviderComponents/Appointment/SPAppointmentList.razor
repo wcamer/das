@@ -70,11 +70,13 @@
                         {
                             @foreach (var appointment in FilteredAppointments)
                             {
-                                var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
 
+                                var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
+                                var infoRoute = $"/patient-details/{appointment.PatientId}";
                                 <tr>
                                     <td>
                                         @(appointment.Name)
+
                                     </td>
                                     <td>
                                         @(appointment.Date.ToString("MM/dd/yyyy"))
