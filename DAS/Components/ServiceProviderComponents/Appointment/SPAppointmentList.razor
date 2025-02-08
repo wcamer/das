@@ -55,9 +55,11 @@
                                     }
                                 </select>
                             </th>
-                            <th></th>
+                            <th>
+                                Action
+                            </th>
                             @* this is for testing *@
-                            <th>Appointment Id</th>
+                            @* <th>Appointment Id</th> *@
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +70,7 @@
                         {
                             @foreach (var appointment in FilteredAppointments)
                             {
-                                var editRoute = $"/edit-appointment/{appointment.AppointmentId}";
+                                var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
 
                                 <tr>
                                     <td>
@@ -103,9 +105,9 @@
                                         @* <button type="button" @onclick="CreateAppointment"> Test apointment create</button> *@
                                     </td>
                                     @* for dev testing *@
-                                    <td>
+                                    @* <td>
                                         @(appointment.AppointmentId)
-                                    </td>
+                                    </td> *@
 
                                 </tr>
                             }
