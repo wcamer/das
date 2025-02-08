@@ -71,11 +71,15 @@ else
                             <p>@note.DoctorName</p>
                             <p>@note.Date.ToString("MM/dd/yyyy")</p>
                             <div>
-                                <button>
-                                    <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
-                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> View
-                                    </NavLink>
-                                </button>
+                                @if(profileType == "Doctor")
+                                {
+                                    <button>
+                                        <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
+                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> View
+                                        </NavLink>
+                                    </button>
+                                }
+                                
                                 @if (profileType == "Doctor" && userId == note.DoctorId)
                                 {
                                     @* var doctorNoteEditRoute = $"/DoctorNoteEdit{note.DoctorNoteId}"; *@
@@ -90,8 +94,6 @@ else
                             </div>
                         </div>
                         
-
-
                     </div>
                 }
 
