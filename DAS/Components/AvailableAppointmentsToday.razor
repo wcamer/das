@@ -236,7 +236,8 @@ else
             }
             else if(profileType == "Doctor" || profileType == "Associate")
             {
-                Console.WriteLine($"Profile Type is... {profileType}.  Waiting on SP appointment creation to be integrated");
+                //Console.WriteLine($"Profile Type is... {profileType}.  Waiting on SP appointment creation to be integrated");
+                NavigationManager.NavigateTo("/sp-create-appointment");
             }
         }
     }
