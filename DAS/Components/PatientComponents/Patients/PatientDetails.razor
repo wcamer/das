@@ -62,43 +62,50 @@ else
     <div>
         <h2>Doctor Notes</h2>
         <div>
-            @foreach (var note in docNotes)
+            @if(docNotes.Any(dn => dn.PatientId == PatientId) )
             {
-                if (note.PatientId == PatientId)
+                @foreach (var note in docNotes)
                 {
-                    var doctorNoteDetailedRoute = $"/DoctorNoteDetailed/{note.DoctorNoteId}";
-                    <div>
+                    if (note.PatientId == PatientId)
+                    {
+                        var doctorNoteDetailedRoute = $"/DoctorNoteDetailed/{note.DoctorNoteId}";
                         <div>
-                            <p>@note.DoctorName</p>
-                            <p>@note.Date.ToString("MM/dd/yyyy")</p>
                             <div>
-                                @if(profileType == "Doctor")
-                                {
-                                    <button>
-                                        <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
-                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> View
-                                        </NavLink>
-                                    </button>
-                                }
-                                
-                                @if (profileType == "Doctor" && userId == note.DoctorId)
-                                {
-                                    @* var doctorNoteEditRoute = $"/DoctorNoteEdit{note.DoctorNoteId}"; *@
-                                    <button>
-                                        @* <NavLink class="nav-link" href=@doctorNoteEditRoute> *@
-                                        <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
+                                <p>@note.DoctorName</p>
+                                <p>@note.Date.ToString("MM/dd/yyyy")</p>
+                                <div>
+                                    @if(profileType == "Doctor")
+                                    {
+                                        <button>
+                                            <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
+                                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> View
+                                            </NavLink>
+                                        </button>
+                                    }
+                                    
+                                    @if (profileType == "Doctor" && userId == note.DoctorId)
+                                    {
+                                        @* var doctorNoteEditRoute = $"/DoctorNoteEdit{note.DoctorNoteId}"; *@
+                                        <button>
+                                            @* <NavLink class="nav-link" href=@doctorNoteEditRoute> *@
+                                            <NavLink class="nav-link" href=@doctorNoteDetailedRoute>
 
-                                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
-                                        </NavLink>
-                                    </button>
-                                }
+                                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Edit
+                                            </NavLink>
+                                        </button>
+                                    }
+                                </div>
                             </div>
+                            
                         </div>
-                        
-                    </div>
-                }
+                    }
 
-            }@* end of foreach block *@
+                }@* end of foreach block *@
+            }
+            else
+            {
+                <p>------- Patient Doesn't Have Any Doctor Notes --------</p>
+            }
         </div>
     </div>
 
@@ -178,15 +185,15 @@ else
             await AppState.LoadListsAsync();
             docNotes = AppState.DoctorNotes;
             @* StateHasChanged(); *@
-            Console.WriteLine($"-----------userId {userId} and founduser.userid {foundUser.UserId} ");
-            Console.WriteLine($"-----------profiletype {profileType} and founduser.profileType {foundUser.Type} ");
+            @* Console.WriteLine($"-----------userId {userId} and founduser.userid {foundUser.UserId} ");
+            Console.WriteLine($"-----------profiletype {profileType} and founduser.profileType {foundUser.Type} "); *@
 
 
 
             var foundPatient = await AppState.GetPatientById(PatientId, foundUser.UserId);
             if (foundPatient != null)
             {
-                Console.WriteLine($"-----------foundpatientid/fname/lname{foundPatient.PatientId} {foundPatient.FirstName} {foundPatient.LastName} ");
+                @* Console.WriteLine($"-----------foundpatientid/fname/lname{foundPatient.PatientId} {foundPatient.FirstName} {foundPatient.LastName} "); *@
 
 
                 patient = new Patient
@@ -198,7 +205,7 @@ else
                     };
 
                 
-                Console.WriteLine($"-----------patientid/fname/lname{patient.PatientId} {patient.FirstName} {patient.LastName} ");
+                @* Console.WriteLine($"-----------patientid/fname/lname{patient.PatientId} {patient.FirstName} {patient.LastName} "); *@
 
 
 
@@ -232,7 +239,7 @@ else
 
                         //Console.WriteLine($"-----------patientid/fname/lname{patient.PatientId} {patient.FirstName} {patient.LastName} ");
 
-
+                        
 
                         StateHasChanged();
                     }
