@@ -1,0 +1,91 @@
+/* Global Styles for the Login Page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F5F7FA;
+    /* Light Gray Background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Styling for card-like sections */
+.card {
+    background-color: #F5F7FA;
+    /* Light gray */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+    text-align: center;
+}
+
+/* Container for the Login Form */
+.login-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Heading Styling */
+h1,
+h2 {
+    color: #0052CC;
+    /* Blue */
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #D9534F;
+    /* Red for error messages */
+}
+
+/* Link styling for Sign-Up */
+button {
+    color: #0052CC;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+button:hover {
+    text-decoration: underline;
+}
+
+/* Align Sign-Up button with spacing */
+button+.nav-link {
+    margin-top: 20px;
+}
+
+/* Error and Message Styles */
+div h3 {
+    color: #D9534F;
+    /* Red for error */
+    margin-top: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15px;
+        width: 90%;
+    }
+
+    h1,
+    h2 {
+        font-size: 24px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}

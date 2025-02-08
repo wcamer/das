@@ -1,0 +1,46 @@
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Input Fields Styling */
+input[type="email"],
+input[type="password"] {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+input[type="email"]:disabled,
+input[type="password"]:disabled {
+    background-color: #f0f0f0;
+}
+
+/* Button Styling */
+button {
+    background-color: #2DC5A1;
+    /* Teal */
+    color: white;
+    padding: 8px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 10px;
+}
+
+button:hover {
+    background-color: #238e75;
+    /* Darker Teal on Hover */
+}
