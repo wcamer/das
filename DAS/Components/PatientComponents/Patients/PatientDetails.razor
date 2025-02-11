@@ -3,20 +3,25 @@
 @inject AppState AppState
 @rendermode InteractiveServer
 
+<PageTitle>Patient Details</PageTitle>
+
 <h1>Patient Details</h1>
+
 @if (userId <= 0 && (profileType != "Doctor" || profileType != "Patient"))
 {
     <p>Access Denied</p>
 }
 else
 {
-    <div>
+    <div class="card">
         <p>Name: @patient.FirstName @patient.LastName</p>
+        <p>Insurance: @patient.InsuranceCompany</p>
+        <p>Policy Number: @patient.InsurancePolicyNumber</p>
     </div>
     @if (profileType == "Doctor")
     {
 
-        <div>
+        <div class="button-container center-text">
             <button @onclick="@(() => {
                 isFormDisabled = false;
                 createFlag = true;
@@ -33,7 +38,7 @@ else
         @if(createFlag == true)
         {
             
-            <div>
+            <div class="center-text">
                 <label>Create New Doctor Note:</label>
                 <EditForm Model="@newNote" FormName="CreateDoctorNoteForm" disabled="@isFormDisabled">
                     <DataAnnotationsValidator />
@@ -61,7 +66,7 @@ else
 
     <div>
         <h2>Doctor Notes</h2>
-        <div>
+        <div class="center-text note-container">
             @if(docNotes.Any(dn => dn.PatientId == PatientId) )
             {
                 @foreach (var note in docNotes)
@@ -70,7 +75,7 @@ else
                     {
                         var doctorNoteDetailedRoute = $"/DoctorNoteDetailed/{note.DoctorNoteId}";
                         <div>
-                            <div>
+                            <div class="card note-cards">
                                 <p>@note.DoctorName</p>
                                 <p>@note.Date.ToString("MM/dd/yyyy")</p>
                                 <div>
@@ -201,6 +206,8 @@ else
                         PatientId = foundPatient.PatientId,
                         FirstName = foundPatient.FirstName,
                         LastName = foundPatient.LastName,
+                        InsuranceCompany = foundPatient.InsuranceCompany,
+                        InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
 
                     };
 
@@ -227,6 +234,8 @@ else
                             PatientId = foundPatient.PatientId,
                             FirstName = foundPatient.FirstName,
                             LastName = foundPatient.LastName,
+                            InsuranceCompany = foundPatient.InsuranceCompany,
+                            InsurancePolicyNumber = foundPatient.InsurancePolicyNumber
 
                         };
 

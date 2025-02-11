@@ -1,0 +1,55 @@
+
+button {
+    background-color: #0052CC;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 1rem;
+}
+
+button:hover {
+    background-color: #2DC5A1;
+}
+
+td button:hover {
+    background-color: #003f99;
+}
+
+
+button:disabled {
+    background-color: #F5F7FA;
+    color: #2D2D2D;
+    cursor: not-allowed;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #F5F7FA;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table th,
+.table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #2DC5A1;
+    color: white;
+    font-weight: bold;
+}
+
+.table tbody tr:hover {
+    background-color: #eaf7f4;
+}
