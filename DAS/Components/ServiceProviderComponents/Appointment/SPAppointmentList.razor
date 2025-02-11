@@ -9,7 +9,7 @@
 @inject UserService UserService
 @inject AuthService AuthService
 
-<div>
+
     @if (userId <= 0)
     {
         <p>-------- Login to view information --------</p>
@@ -29,12 +29,11 @@
                     <thead>
                         <tr>
                             <th>
-                                Name <input @bind="SearchName" placeholder="Search by Name">
+                                <input @bind="SearchName" placeholder="Name">
                             </th>
                             <th>
-                                Appointment Date
                                 <select @bind="SearchDate">
-                                    <option value="">All Dates</option>
+                                    <option value="">Date</option>
                                     <option value="@DateTime.Today.ToString("MM/dd/yyyy")">Today's Date</option>
                                     @foreach (var date in appointments.Select(a => a.Date.ToString("MM/dd/yyyy")).Distinct())
                                     {
@@ -46,9 +45,8 @@
                                 Time
                             </th>
                             <th>
-                                Status
                                 <select @bind="SearchStatus">
-                                    <option value="">Search by Status</option>
+                                    <option value="">Status</option>
                                     @foreach (var status in appointments.Select(a => a.Status).Distinct())
                                     {
                                         <option value="@status">@status</option>
@@ -125,7 +123,7 @@
 
     }
 
-</div>
+
 
 @code {
     private bool ShowAppointments = false; // Controls visibility

@@ -1,0 +1,120 @@
+/* General styles */
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: var(--blue);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    color: #0052CC;
+    /* Blue */
+    margin-bottom: 10px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+div {
+    margin-bottom: 10px;
+}
+
+/* Sign-Out Button */
+.button-container button{
+    background-color: #0052CC;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 90%;
+    margin: auto;
+}
+
+button {
+    background-color: #0052CC;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin: 1rem 1rem 0 1rem;
+}
+
+button:hover {
+    background-color: #2DC5A1;
+}
+
+button:disabled {
+    background-color: #F5F7FA;
+    color: #2D2D2D;
+    cursor: not-allowed;
+}
+
+.center-text {
+    text-align: center;
+}
+
+/* Sign-Out Confirmation Box */
+.signout-popup {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #F5F7FA;
+    border-left: 5px solid #0052CC;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.signout-popup p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2D2D2D;
+}
+
+/* Styling for card-like sections */
+.card {
+    background-color: #F5F7FA;
+    /* Light gray */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 1000px;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.note-cards{
+    max-width: 350px;
+}
+
+.center-text{
+    text-align: center;
+}
+
+
+/* Responsive layout for larger screens */
+@media (min-width: 1250px) {
+    .note-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 cards per row */
+        gap: 20px;
+        justify-content: center;
+        max-width: 90%;
+        margin: 0 auto;
+    }
+}
