@@ -15,91 +15,95 @@
 }
 else
 {
-    <EditForm Model="@profile"  FormName="EditPatientProfileForm">
+    <div class="card-container">
+        <div class="card">    
+            <EditForm Model="@profile"  FormName="EditPatientProfileForm">
 
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        @if (!string.IsNullOrEmpty(message))
-        {
-            <div class="alert alert-info">@message</div>
-        }
-        @if (deleteWarningFlag == true)
-        {
-            <div>
-                <button @onclick="ProcessDeletePatientProfile" disabled="@isFormDisabled">Yes</button>
-                <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
-            </div>
-        }
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-info">@message</div>
+                }
+                @if (deleteWarningFlag == true)
+                {
+                    <div>
+                        <button @onclick="ProcessDeletePatientProfile" disabled="@isFormDisabled">Yes</button>
+                        <button @onclick="@(() => { deleteWarningFlag = false; message = string.Empty; })" disabled="@isFormDisabled">No</button>
+                    </div>
+                }
 
 
-        <div>
-            <label>First Name:</label>
-            <InputText @bind-Value="profile.FirstName" disabled="@deleteWarningFlag" placeholder="ex: John" />
-            <ValidationMessage For="@(() => profile.FirstName)" />
+                <div>
+                    <label>First Name:</label>
+                    <InputText @bind-Value="profile.FirstName" disabled="@deleteWarningFlag" placeholder="ex: John" />
+                    <ValidationMessage For="@(() => profile.FirstName)" />
+                </div>
+                <div>
+                    <label>Last Name:</label>
+                    <InputText @bind-Value="profile.LastName" disabled="@deleteWarningFlag" placeholder="ex: Smith" />
+                    <ValidationMessage For="@(() => profile.LastName)" />
+                </div>
+
+                <div>
+                    <label>Telephone:</label>
+                    <InputText @bind-Value="profile.Telephone" disabled="@deleteWarningFlag" placeholder="ex: 0123456789" />
+                    <ValidationMessage For="@(() => profile.Telephone)" />
+                </div>
+
+                <div>
+                    <label>Address:</label>
+                    <InputText @bind-Value="profile.Address" disabled="@deleteWarningFlag" placeholder="ex: 111 East 222 West" />
+                    <ValidationMessage For="@(() => profile.Address)" />
+                </div>
+                <div>
+                    <label>City</label>
+                    <InputText @bind-Value="profile.City" disabled="@deleteWarningFlag" placeholder="ex: Salt Lake City" />
+                    <ValidationMessage For="@(() => profile.City)" />
+                </div>
+                <div>
+                    <label>State:</label>
+                    <InputText @bind-Value="profile.State" disabled="@deleteWarningFlag" placeholder="ex: Utah" />
+                    <ValidationMessage For="@(() => profile.State)" />
+                </div>
+                <div>
+                    <label>ZipCode:</label>
+                    <InputText @bind-Value="profile.ZipCode" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
+                    <ValidationMessage For="@(() => profile.ZipCode)" />
+                </div>
+
+                <div>
+                    <label>Insurance Company:</label>
+                    <InputText @bind-Value="profile.InsuranceCompany" disabled="@deleteWarningFlag"
+                        placeholder="ex: Red Cross Blue Shield" />
+                    <ValidationMessage For="@(() => profile.InsuranceCompany)" />
+                </div>
+                <div>
+                    <label>Insurance Policy:</label>
+                    <InputText @bind-Value="profile.InsurancePolicyNumber" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
+                    <ValidationMessage For="@(() => profile.InsurancePolicyNumber)" />
+                </div>
+
+                <div>
+                    <label>Email:</label>
+                    <InputText @bind-Value="profile.Email" disabled />
+                    
+                </div>
+
+                @* <div>
+                    <label>Password:</label>
+                    <InputText @bind-Value="profile.Password" disabled="@isFormDisabled" />
+                    <ValidationMessage For="@(() => profile.Password)" />
+                </div> *@
+
+
+            <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
+            <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
+
+
+            </EditForm>
         </div>
-        <div>
-            <label>Last Name:</label>
-            <InputText @bind-Value="profile.LastName" disabled="@deleteWarningFlag" placeholder="ex: Smith" />
-            <ValidationMessage For="@(() => profile.LastName)" />
-        </div>
-
-        <div>
-            <label>Telephone:</label>
-            <InputText @bind-Value="profile.Telephone" disabled="@deleteWarningFlag" placeholder="ex: 0123456789" />
-            <ValidationMessage For="@(() => profile.Telephone)" />
-        </div>
-
-        <div>
-            <label>Address:</label>
-            <InputText @bind-Value="profile.Address" disabled="@deleteWarningFlag" placeholder="ex: 111 East 222 West" />
-            <ValidationMessage For="@(() => profile.Address)" />
-        </div>
-        <div>
-            <label>City</label>
-            <InputText @bind-Value="profile.City" disabled="@deleteWarningFlag" placeholder="ex: Salt Lake City" />
-            <ValidationMessage For="@(() => profile.City)" />
-        </div>
-        <div>
-            <label>State:</label>
-            <InputText @bind-Value="profile.State" disabled="@deleteWarningFlag" placeholder="ex: Utah" />
-            <ValidationMessage For="@(() => profile.State)" />
-        </div>
-        <div>
-            <label>ZipCode:</label>
-            <InputText @bind-Value="profile.ZipCode" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
-            <ValidationMessage For="@(() => profile.ZipCode)" />
-        </div>
-
-        <div>
-            <label>Insurance Company:</label>
-            <InputText @bind-Value="profile.InsuranceCompany" disabled="@deleteWarningFlag"
-                placeholder="ex: Red Cross Blue Shield" />
-            <ValidationMessage For="@(() => profile.InsuranceCompany)" />
-        </div>
-        <div>
-            <label>Insurance Policy:</label>
-            <InputText @bind-Value="profile.InsurancePolicyNumber" disabled="@deleteWarningFlag" placeholder="ex: 12345" />
-            <ValidationMessage For="@(() => profile.InsurancePolicyNumber)" />
-        </div>
-
-        <div>
-            <label>Email:</label>
-            <InputText @bind-Value="profile.Email" disabled />
-            
-        </div>
-
-        @* <div>
-            <label>Password:</label>
-            <InputText @bind-Value="profile.Password" disabled="@isFormDisabled" />
-            <ValidationMessage For="@(() => profile.Password)" />
-        </div> *@
-
-
-    <button type="submit" @onclick="HandleValidSubmit" disabled="@deleteWarningFlag">Submit</button>
-    <button @onclick="@(() => { deleteWarningFlag = true; message = deleteWarningMessage; })" disabled="@deleteWarningFlag">Delete</button>
-
-
-    </EditForm>
+    </div>
 }
 
 @code {
