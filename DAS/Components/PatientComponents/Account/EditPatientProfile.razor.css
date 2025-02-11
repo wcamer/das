@@ -1,0 +1,66 @@
+/* Center the Card on the Page */
+.card-container {
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Style the Card */
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Style Headings */
+h1 {
+    color: #0052CC;
+    margin-bottom: 20px;
+}
+
+/* Input Fields */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Button */
+button {
+    background-color: #2DC5A1;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 60%;
+}
+
+button:hover {
+    background-color: #26A38E;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
