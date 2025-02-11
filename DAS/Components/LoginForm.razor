@@ -9,6 +9,7 @@
 @using DAS.Components.PatientComponents.Account
 
 @* <PatientList /> *@
+<h1>Login Portal</h1>
 
 <EditForm Model="@loginModel" OnValidSubmit="Authenticate" FormName="LoginForm">
     <DataAnnotationsValidator />
@@ -17,8 +18,8 @@
         <h3>@errorMessage</h3>
         <h3>@message</h3>
     </div>
-
-    <h2>Please Login</h2>
+    @* 
+    <h2>Please Login</h2> *@
 
     <label>Email:</label>
     <InputText @bind-Value="loginModel.Email" type="email" disabled=@isFormDisabled />
@@ -27,26 +28,31 @@
 
     <label>Password:</label>
     <InputText @bind-Value="loginModel.Password" type="password" disabled=@isFormDisabled />
-    
+
     <p></p>
-    
+
     <button>Login</button>
     @*if (activeUser == true)
     {
         <button @onclick="@(() => {logOutFlag= true; loginModel.Message = logOutWarningMessage; })">Sign Out</button>
 
     }*@
+    <button>
+        <NavLink class="nav-link" href="/createAccount">
+            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> New Patient Sign Up
+        </NavLink>
+    </button>
 </EditForm>
 
 @code
 {
     //Initialize Object for data to be stored into
     private LoginModel loginModel = new LoginModel
-        {
-            Email = string.Empty,
-            Password = string.Empty,
+    {
+        Email = string.Empty,
+        Password = string.Empty,
         @* Message = string.Empty *@
-};
+    };
 
     //Used for displaying a message to the user if logged in, logged out, or login error
 
@@ -150,22 +156,22 @@
 
     /*
     This function was how William handled login in the past
-        Checks local storge for stored userid-- to my understanding, this is a temporary way to keep someone logged in
-        until authentication is figured out.
-        We would need to include a js script somewhere for functions to handle local storage.
+    Checks local storge for stored userid-- to my understanding, this is a temporary way to keep someone logged in
+    until authentication is figured out.
+    We would need to include a js script somewhere for functions to handle local storage.
 
-        private async Task<int> getLoggedInUser()
+    private async Task<int> getLoggedInUser()
     {
-        string targetString = await JSRuntime.InvokeAsync<string>("getLocalStorageItem", "LoggedInUser");
-        if (!string.IsNullOrEmpty(targetString) && int.TryParse(targetString, out int userId))
-        {
-            return userId;
-            }
-        else
-        {
-            return 0;
-            }
-        }*/
+    string targetString = await JSRuntime.InvokeAsync<string>("getLocalStorageItem", "LoggedInUser");
+    if (!string.IsNullOrEmpty(targetString) && int.TryParse(targetString, out int userId))
+    {
+    return userId;
+    }
+    else
+    {
+    return 0;
+    }
+    }*/
 
 
     @* public async Task signOut()
