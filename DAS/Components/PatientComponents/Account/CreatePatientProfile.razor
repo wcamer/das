@@ -141,117 +141,7 @@
     //Flag to disable the form when flipped to true
     bool isFormDisabled = false;
 
-    //This will login the newly created profile owner
-    private async Task Authenticate()
-    {
-        if(profile.Email != null && profile.Password != null)
-        {
-            var User = await AuthService.LoginAsync(profile.Email, profile.Password);
-            if (User != null)
-            {
-                @* UserService.CurrentUser = User; *@
-                await UserService.SetLoggedInUser(User);
-                message = "Profile created successfully and redirecting to Patient Dashboard";
-                StateHasChanged();
-                await Task.Delay(2000);
-                NavigationManager.NavigateTo("/dashboard");
-            }
-            else
-            {
-                message = "Profile and profile owner's patient info was created successfully but login failed.  Unable to authenticate creditentials, please try logging in the login page.";
-            }
-        }
-        else
-        {
-            message = "Profile and profile owner's patient info was created successfully but login failed.  Password and or email are null.  Please try logging in in the login page";
-        }
-
-        
-    }
-
-
-    private async Task HandleValidSubmit()
-    {
-
-        //set logged in user to newly created account
-        // make sure that the email and password of the created account are not empty or null
-        if (!string.IsNullOrEmpty(profile.Email) && !string.IsNullOrEmpty(profile.Password))
-        {
-            Console.WriteLine($">>>>>>>>>>>>>>>>>>> email:{profile.Email} password:{profile.Password} ");
-
-            //This checks to see if this profile exists already based on the email and password
-            var existingProfile = await AppState.GetProfileByCreds(profile, profile.Email, profile.Password);
-
-            //testing existingProfile conditional Note: must change conditional to check false
-            @* var existingProfilee = false; *@
-            @* if (existingProfilee == false) *@
-            @* if (existingProfilee != false) *@
-
-            if (existingProfile == null) // needs to equal null
-            {
-                message = "Profile created successfully but failed to sign-in. Please try signing later";
-                return;
-            }
-            else
-            {
-                //After making sure the newly created profile exists we will use the info to create the Profile owner as a patient
-                Patient newPatient = new Patient()
-                    {
-                        FirstName = existingProfile.FirstName,
-                        LastName = existingProfile.LastName,
-                        ProfileId = existingProfile.ProfileId, // this will be the logged user's id
-
-                    //These bottom 2 will be filled in from our form
-                        InsuranceCompany = profile.InsuranceCompany,
-                        InsurancePolicyNumber = profile.InsurancePolicyNumber
-
-                    };
-
-                var addedNewPatientSuccess = await AppState.AddNewGroupMember(newPatient);
-
-                //Testing addedNewPatientSuccess conditional
-                @* var addedNewPatientSuccess = false; *@
-                @* var addedNewPatientSuccess = true; *@
-
-                if (addedNewPatientSuccess == true)
-                {
-                    message = "Profile created successfully and profile owner created successfully. Attempting to login...";
-                    StateHasChanged();
-
-                    // Below the commented out line is an idea fragment going to the localStorage to retrieve a valid profile's Id
-                    @* await JSRuntime.InvokeVoidAsync("setLocalStorageItem", "LoggedInUser", validProfile.ProfileId); *@
-                    isFormDisabled = true;
-                    await Task.Delay(2000);
-                    
-                    //Now we will try to log in the newly created profile
-                    await  Authenticate();
-
-                    
-                }
-                else
-                {
-                    message = "Account created successfully but failed to sign-in. Please try signing in Login Screen";
-                    StateHasChanged();
-                }
-
-            }
-
-        }
-        else
-        {
-
-            message = "Account created successfully but failed to sign-in. Please try signing later";
-
-        }
-
-
-
-        //send user back the the home page but can be changed to send back to customer's dashboard
-        @* NavigationManager.NavigateTo("/"); *@
-
-    }//end of HandleValidSubmit()
-
-
+   
     private async Task CreateNewPatientProfile()
     {
         message = "";
@@ -334,6 +224,119 @@
         }
 
     }// end of CreateNewPatientProfile()
+
+
+    private async Task HandleValidSubmit()
+    {
+
+        //set logged in user to newly created account
+        // make sure that the email and password of the created account are not empty or null
+        if (!string.IsNullOrEmpty(profile.Email) && !string.IsNullOrEmpty(profile.Password))
+        {
+
+            //This checks to see if this profile exists already based on the email and password
+            var existingProfile = await AppState.GetProfileByCreds(profile, profile.Email, profile.Password);
+
+            //testing existingProfile conditional Note: must change conditional to check false
+            @* var existingProfilee = false; *@
+            @* if (existingProfilee == false) *@
+            @* if (existingProfilee != false) *@
+
+            if (existingProfile == null) // needs to equal null
+            {
+                message = "Profile created successfully but failed to sign-in. Please try signing later";
+                return;
+            }
+            else
+            {
+                //After making sure the newly created profile exists we will use the info to create the Profile owner as a patient
+                Patient newPatient = new Patient()
+                    {
+                        FirstName = existingProfile.FirstName,
+                        LastName = existingProfile.LastName,
+                        ProfileId = existingProfile.ProfileId, // this will be the logged user's id
+
+                    //These bottom 2 will be filled in from our form
+                        InsuranceCompany = profile.InsuranceCompany,
+                        InsurancePolicyNumber = profile.InsurancePolicyNumber
+
+                    };
+
+                var addedNewPatientSuccess = await AppState.AddNewGroupMember(newPatient);
+
+                //Testing addedNewPatientSuccess conditional
+                @* var addedNewPatientSuccess = false; *@
+                @* var addedNewPatientSuccess = true; *@
+
+                if (addedNewPatientSuccess == true)
+                {
+                    message = "Profile created successfully and profile owner created successfully. Attempting to login...";
+                    StateHasChanged();
+
+                    // Below the commented out line is an idea fragment going to the localStorage to retrieve a valid profile's Id
+                    @* await JSRuntime.InvokeVoidAsync("setLocalStorageItem", "LoggedInUser", validProfile.ProfileId); *@
+                    isFormDisabled = true;
+                    await Task.Delay(2000);
+                    
+                    //Now we will try to log in the newly created profile
+                    await  Authenticate();
+
+                    
+                }
+                else
+                {
+                    message = "Account created successfully but failed to sign-in. Please try signing in Login Screen";
+                    StateHasChanged();
+                }
+
+            }
+
+        }
+        else
+        {
+
+            message = "Account created successfully but failed to sign-in. Please try signing later";
+
+        }
+
+
+
+        //send user back the the home page but can be changed to send back to customer's dashboard
+        @* NavigationManager.NavigateTo("/"); *@
+
+    }//end of HandleValidSubmit()
+
+     //This will login the newly created profile owner
+    private async Task Authenticate()
+    {
+        if(profile.Email != null && profile.Password != null)
+        {
+            var User = await AuthService.LoginAsync(profile.Email, profile.Password);
+            if (User != null)
+            {
+                @* UserService.CurrentUser = User; *@
+                await UserService.SetLoggedInUser(User);
+                message = "Profile created successfully and redirecting to Patient Dashboard";
+                StateHasChanged();
+                await Task.Delay(2000);
+                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+            }
+            else
+            {
+                message = "Profile and profile owner's patient info was created successfully but login failed.  Unable to authenticate creditentials, please try logging in the login page.";
+            }
+        }
+        else
+        {
+            message = "Profile and profile owner's patient info was created successfully but login failed.  Password and or email are null.  Please try logging in in the login page";
+        }
+
+        
+    }
+
+
+
+   
 
 
 }@*End of @code block  *@
