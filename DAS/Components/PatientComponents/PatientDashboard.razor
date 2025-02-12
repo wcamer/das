@@ -14,7 +14,7 @@ else
 {
     <div class="dashboard-container">
         <div class="card patient-profile">
-        <PatientProfile />
+            <PatientProfile />
         </div>
 
         <div class="card options-section">
@@ -33,19 +33,19 @@ else
     </div>
 
     <div class="dashboard-container">
-            <div class="card patient-group">
-                <h2>Patient Group</h2>
-                <PatientGroup />
-            </div>
-            <div class="card appointments-section">
-                <h2>Upcoming Appointments</h2>
-                <PatientUpcomingAppointments />
-            </div>
-            <div class="card appointments-section">
-                <h2>Appointment History</h2>
-                <PatientAppointmentHistory />
-            </div>
+        <div class="card patient-group">
+            <h2>Patient Group</h2>
+            <PatientGroup />
         </div>
+        <div class="card appointments-section">
+            <h2>Upcoming Appointments</h2>
+            <PatientUpcomingAppointments />
+        </div>
+        <div class="card appointments-section">
+            <h2>Appointment History</h2>
+            <PatientAppointmentHistory />
+        </div>
+    </div>
 }
 
 @code {
@@ -93,7 +93,7 @@ else
 
         message = "Successfully signed out. Returning to home page";
         StateHasChanged();
-        await Task.Delay(5000);
+        await Task.Delay(2000);
 
         //NavigationManager.NavigateTo("/", forceLoad: true);
         //Not an elegant solution but will work for now

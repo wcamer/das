@@ -83,7 +83,7 @@
                 await UserService.SetLoggedInUser(User);
                 message = "Profile created successfully and redirecting to Dashboard";
                 StateHasChanged();
-                await Task.Delay(5000);
+                await Task.Delay(2000);
                 NavigationManager.NavigateTo("/dashboard");
             }
             else
@@ -124,7 +124,7 @@
                 // Below the commented out line is an idea fragment going to the localStorage to retrieve a valid profile's Id
                 @* await JSRuntime.InvokeVoidAsync("setLocalStorageItem", "LoggedInUser", validProfile.ProfileId); *@
                 isFormDisabled = true;
-                await Task.Delay(5000);
+                await Task.Delay(2000);
                     
                 //Now we will try to log in the newly created profile
                 await  Authenticate();
@@ -185,7 +185,7 @@
                     message = "Profile Creation Successful.  Creating adding profile owner as a patient connected to this profile...";
 
                     //Testing to allow time to verify message works
-                    await Task.Delay(5000);
+                    await Task.Delay(2000);
 
                     await HandleValidSubmit();
                 }
