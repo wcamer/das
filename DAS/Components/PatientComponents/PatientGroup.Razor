@@ -40,7 +40,6 @@
                         . another acceptable hardcode test is Cloud strife profileID 3 patient ID 5 *@
                         @if (p.ProfileId == userId )
                         {
-                            Console.WriteLine($"****************************** {p.FirstName} {p.LastName} {p.PatientId} profileid = {p.ProfileId}");
 
                             var patientEditRoute = $"/edit-patient/{p.PatientId}";
                             var patientDetailsRoute = $"/patient-details/{p.PatientId}";
@@ -99,14 +98,12 @@
             var foundUser = await UserService.GetLoggedInUser();
             if(foundUser != null )
             {
-                Console.WriteLine($"!!!!!!!!!!!!!!!!!<-----");
 
                 userId = foundUser.UserId;
                 StateHasChanged();
             }
             else
             {
-                Console.WriteLine($">>>>>>>>>>> we ar missing foundUserrrrrrrrrrrr <-----");
 
                 return;
             }

@@ -9,7 +9,7 @@
     <p>Access Denied</p>
 }
 else 
-{
+{ 
     <h1>Doctor Note Detailed</h1>
     <div>
         <h2>Note Information</h2>
@@ -208,7 +208,7 @@ else
             {
                 userId = foundUser.UserId;
                 profileType = foundUser.Type;
-                Console.WriteLine($"-------------{userId} ----{foundUser.UserId}-----{profileType}-----{foundUser.Type}");
+                @* Console.WriteLine($"-------------{userId} ----{foundUser.UserId}-----{profileType}-----{foundUser.Type}"); *@
                 StateHasChanged();
             }
             else

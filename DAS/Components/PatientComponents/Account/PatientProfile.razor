@@ -48,23 +48,23 @@ else
     }
 
     private TemporaryExtentedProfile profile = new TemporaryExtentedProfile
-        {
-            ProfileId = -2,
-            FirstName = string.Empty,
-            LastName = string.Empty,
-            Telephone = string.Empty,
-            Address = string.Empty,
-            City = string.Empty,
-            State = string.Empty,
-            ZipCode = string.Empty,
-            Email = string.Empty,
-            Password = string.Empty,
-            InsuranceCompany = string.Empty,
-            InsurancePolicyNumber = string.Empty
+    {
+        ProfileId = -2,
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        Telephone = string.Empty,
+        Address = string.Empty,
+        City = string.Empty,
+        State = string.Empty,
+        ZipCode = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty,
+        InsuranceCompany = string.Empty,
+        InsurancePolicyNumber = string.Empty
 
 
 
-        };
+    };
 
     private int userId = -1;
 
@@ -120,29 +120,10 @@ else
                     profile.Email = userProfileData.Email;
                     profile.InsuranceCompany = userPatientData.InsuranceCompany;
                     profile.InsurancePolicyNumber = userPatientData.InsurancePolicyNumber;
-                    @* StateHasChanged(); *@
-                    //Console.WriteLine($">>>>>>>>>>>>profileName {profile.FirstName} <-----");
+
 
                 }
-                //current problem is that there is no patient info being found
-                @* else
-                {
-                    profile.ProfileId = userProfileData.ProfileId;
 
-                    profile.FirstName = userProfileData.FirstName;
-                    profile.LastName = userProfileData.LastName;
-                    profile.Telephone = userProfileData.Telephone;
-                    profile.Address = userProfileData.Address;
-                    profile.City = userProfileData.City;
-                    profile.State = userProfileData.State;
-                    profile.ZipCode = userProfileData.ZipCode;
-                    profile.Email = userProfileData.Email;
-                    profile.InsuranceCompany = "Uninsured";
-                    profile.InsurancePolicyNumber = "uninsured";
-
-                    Console.WriteLine($">>>>>>>>>>> we ar missing userpatientdata <-----");
-
-                } *@
                 StateHasChanged();
             }
 

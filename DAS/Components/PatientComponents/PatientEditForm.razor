@@ -130,12 +130,7 @@ else
             //Loading up the lists from the DB
             await AppState.LoadListsAsync();
             patients = AppState.Patients ;
-            foreach(var i in patients)
-            {
-                Console.WriteLine($"....................in OnAfterRenderAsync()...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
-
-            }
-        
+          
             var foundPatient = await AppState.GetPatientById(patientId , userId);
             if(foundPatient != null)
             {
@@ -175,32 +170,10 @@ else
     
 
 
-    @* private async Task HandleValidSubmit() *@
+   
     private async Task HandleValidSubmit()
     {
-        // Logic for handling form submission goes here
-        @* return Task.CompletedTask; // Return a completed task *@
-        @* message = "Appointment Successfully updated.";  *@
-
-        Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient this is patient ========...{patient.FirstName} {patient.LastName}");
-        Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient this is oldPatient ========...{oldPatient.FirstName} {oldPatient.LastName}");
-
-
-        foreach(var i in patients)
-            {
-                Console.WriteLine($"....................in handlevalidsubmit but before the call to submitEditPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
-
-            }
-
-
         await SubmitEditPatient(patient);
-        foreach(var i in patients)
-            {
-                Console.WriteLine($"....................in HandleValidSubmit after call to submitEditPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
-
-            }
-        Console.WriteLine($"....................in handlevalidsubmit but AFTER the call to submitEditPatient this is oldPatient ========...{oldPatient.FirstName} {oldPatient.LastName}");
-
 
     }
 
@@ -214,31 +187,14 @@ else
         //hardcoded example for albert wesker profileid NOTE: this will be changed
         @* appointment.AppointSetterId = 1; *@
 
-        foreach(var i in patients)
-            {
-                Console.WriteLine($"....................before selectedPatient...{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
-
-            }
-
         
         // This will get a Patient object and assign to selectedPatient
-        //WHY ARE YOU CHANGING YOUR NAME HERE????
         var selectedPatient =  patients.FirstOrDefault(p => p.PatientId == editedPatient.PatientId);
-
-        //Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
-        foreach(var i in patients)
-        {
-            Console.WriteLine($".....after selected patient....{i.FirstName} {i.LastName} {i.PatientId} {i.ProfileId}");
-
-        }
-        Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& editedPatient.first/lastname/id {editedPatient.FirstName} {editedPatient.LastName} {editedPatient.PatientId}");
-        //Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
 
         //This will check to make sure there is a valid patient that was selected
         if(selectedPatient != null)
         {
-            Console.WriteLine($"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& selectedPatient.first/lastname/id {selectedPatient.FirstName} {selectedPatient.LastName} {selectedPatient.PatientId}");
-
+            
             //This will take in the "id" that was a route parameter, the user's id (in testing it is hardcoded for Albert wesker profileId 1), and the appointment
             var editedPatientToDb = await AppState.EditPatient(patientId, userId, editedPatient);
             //testing line
