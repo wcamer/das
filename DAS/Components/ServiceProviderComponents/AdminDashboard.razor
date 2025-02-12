@@ -6,11 +6,11 @@
 <PageTitle>Admin Dashboard</PageTitle>
 
 <div>
-    <SPProfile/>
+    <SPProfile />
 </div>
 
 <div>
-    <SPList/>
+    <SPList />
 </div>
 
 <div>
@@ -29,7 +29,7 @@
 </div>
 
 
-@code 
+@code
 {
     private bool signOutWindow = false;
     //private bool signOutSuccess = false;
@@ -42,7 +42,7 @@
 
         message = "Successfully signed out. Returning to home page";
         StateHasChanged();
-        await Task.Delay(5000);
+        await Task.Delay(2000);
         @* NavigationManager.NavigateTo("/"); *@
         //This isn't an elegant solution but it will work for now
         NavigationManager.NavigateTo("/", forceLoad: true);
