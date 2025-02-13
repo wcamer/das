@@ -28,7 +28,7 @@ else
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/addGroupMember">Add New Patient To Group</NavLink>
             </div>
-            <button @onclick="() => signOutWindow = true" disabled=@signOutWindow>Sign out</button>
+            <button @onclick="() => SignOut()" disabled=@signOutWindow>Sign out</button>
         </div>
     </div>
 
@@ -89,11 +89,12 @@ else
     private async Task SignOut()
     {
         isDisabled = true;
+        signOutWindow = true;
         await UserService.DeleteLoggedInUser();
 
-        message = "Successfully signed out. Returning to home page";
+        @* message = "Successfully signed out. Returning to home page";
         StateHasChanged();
-        await Task.Delay(2000);
+        await Task.Delay(2000); *@
 
         //NavigationManager.NavigateTo("/", forceLoad: true);
         //Not an elegant solution but will work for now
