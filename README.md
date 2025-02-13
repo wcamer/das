@@ -2,6 +2,15 @@
 
 This is a project that helps the users schedule medical appointments with doctors.
 
+## Try It Out
+
+- Go to "https://doctorappointmentscheduler.azurewebsites.net"
+- Make your own patient profile by clicking on "Login" and then click "New Patient Sign Up". Just follow the directions and have fun exploring.
+
+## Video Presentation
+
+- https://www.youtube.com/watch?v=svDTdHf2qPA
+
 ### Collaborators
 
 - William Cameron
