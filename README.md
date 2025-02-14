@@ -2,6 +2,32 @@
 
 This is a project that helps the users schedule medical appointments with doctors.
 
+## Video Presentation
+
+- [Video Link](https://www.youtube.com/watch?v=svDTdHf2qPA)
+
+### Give It A Try It Out (Instructions)
+
+- Recommended: [Click here](doctorappointmentscheduler.azurewebsites.net) to go to the website and set up your own patient profile.
+- On Local Machine:
+  - After cloning this repo, change directory into the "DAS" subdirectory of "DAS"
+  - Once in the "DAS" subdirectory, in your terminal type "dotnet run" and hit "Enter" when finished.
+  - Keep an eye on the terminal and look for "Now listening on: http://localhost:..." and it will tell you what port it is listening on
+    - Example: Now listening on: http://localhost5292
+  - Go to your preferred web browser and type in "localhost:xxxx" (replace the x's with the actual port number)
+  - When you want to shutdown the app, go to your terminal and use "CTRL + C".
+
+### Technology & Languages
+
+- VS Code 1.97.2
+- .NET Blazor 8.0
+- Razor Syntax (C# & HTML)
+- C#
+- HTML & CSS
+- GitHub (Repo)
+- Azure App Services (Deployment)
+- Azure DevOps (Job Board)
+
 ### Collaborators
 
 - William Cameron

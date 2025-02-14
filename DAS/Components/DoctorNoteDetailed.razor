@@ -56,6 +56,7 @@ else
                     disabled="@deleteWarningFlag">
                         Delete
                     </button>
+                    
                 </div>
 
                 
@@ -131,6 +132,9 @@ else
                 <p>@note.Note</p>
             </div>
         }
+        <button @onclick="() => ReturnToPatientDetails()">
+            Return to Patient Details
+        </button>
     }
     else
     {
@@ -138,6 +142,9 @@ else
             <h3>Note Details:</h3>
             <p>@note.Note</p>
         </div>
+        <button @onclick="() => ReturnToPatientDetails()">
+            Return to Patient Details
+        </button>
     }
 
 
@@ -307,6 +314,11 @@ else
             isFormDisabled = false;
         }
 
+    }
+
+    private void ReturnToPatientDetails()
+    {
+        NavigationManager.NavigateTo($"/patient-details/{patientIdDetails}");
     }
 
 

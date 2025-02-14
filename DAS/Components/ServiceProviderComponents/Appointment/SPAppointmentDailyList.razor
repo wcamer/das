@@ -25,8 +25,8 @@ else
         </thead>
         <tbody>
             @foreach (var appt in AppState.OrderedAppointments
-           .Where(a => a.Date.Date == SelectedDate.Date)
-           .OrderBy(a => a.Time))
+                    .Where(a => a.Date.Date == SelectedDate.Date)
+                    .OrderBy(a => a.Time))
             {
                 <tr style="cursor: pointer;" @onclick="() => NavigateToEdit(appt.AppointmentId)">
                     @* <tr style="cursor: pointer;"> *@
@@ -36,7 +36,7 @@ else
                     <td>@appt.Time</td>
                     <td>@appt.Status</td>
                     <td>
-                        @if (ShowCancelButton && appt.Status != "Canceled")
+                        @if (ShowCancelButton && appt.Status != "Canceled" && appt.Status != "Completed")
                         {
                             <button class="btn btn-primary btn-sm" @onclick="() => NavigateToEdit(appt.AppointmentId)">
                                 Edit
@@ -49,6 +49,10 @@ else
                         else if (appt.Status == "Canceled")
                         {
                             <em>(Canceled)</em>
+                        }
+                        else if (appt.Status == "Completed")
+                        {
+                            <em>Completed</em>
                         }
                     </td>
                     @* <td>@appt.AppointmentId</td> *@
