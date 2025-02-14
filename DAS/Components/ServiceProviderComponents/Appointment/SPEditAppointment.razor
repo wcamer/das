@@ -38,63 +38,157 @@ else
             changeTrigger = appointment.Date;
         }
         
-        <EditForm Model="@appointment"  OnValidSubmit="UpdateAppointment">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+      
+            <EditForm Model="@appointment"  OnValidSubmit="UpdateAppointment">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @if(oldAppointmentInfo.Status != "Completed" && oldAppointmentInfo.Status != "Canceled")
+                {
 
-            <div class="mb-3">
-                <label class="form-label" for="patientSelect">Select Patient:</label>
-                <InputSelect @bind-Value="appointment.PatientId" id="patientSelect" class="form-control">
-                    <option value="">-- Choose a Patient --</option>
-                    @if (patients != null && patients.Any())
-                    {
-                        @foreach (var p in patients)
+                    <div class="mb-3">
+                        <label class="form-label" for="patientSelect">Select Patient:</label>
+                        <InputSelect @bind-Value="appointment.PatientId" id="patientSelect" class="form-control">
+                            <option value="">-- Choose a Patient --</option>
+                            @if (patients != null && patients.Any())
+                            {
+                                @foreach (var p in patients)
+                                {
+                                    <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => appointment.PatientId)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date:</label>
+                        <InputDate @bind-Value="appointment.Date" class="form-control" />
+                        <ValidationMessage For="@(() => appointment.Date)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Appointment Date, Time & Status:</label>
+                        <InputText @bind-Value="oldAppointment" class="form-control" disabled />
+                        
+                    </div>
+                    @* @if(oldAppointmentInfo.Status != "Completed" && oldAppointmentInfo.Status != "Canceled")
+                    { *@
+                        
+                        <div>
+                            <label>Available Times:</label>
+                            <InputSelect @bind-value="appointment.Time" >
+                                @* <option> @appointment.Time -- No Change</option> *@
+                                @* <option>Pick A Time </option> *@
+                                @foreach(var slot in AvailableSlots)
+                                {
+                                    <option value="@slot.Time">@slot.Time</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => appointment.Time)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status:</label>
+                            <InputSelect @bind-Value="appointment.Status" class="form-control">
+                                <option value="Pending">Pending</option>
+                                <option value="Checked In">Checked In</option>
+                                <option value="In Progress">In Progress </option>
+                                <option value="Completed">Completed</option>
+                                <option value="Canceled">Canceled</option>
+                                
+                                
+                            </InputSelect>
+                            <ValidationMessage For="@(() => appointment.Status)" />
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                        <button type="button" class="btn btn-danger ms-2" @onclick="DeleteAppointment">Delete Appointment</button>
+                    @* </EditForm> *@
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <label class="form-label" for="patientSelect">Select Patient:</label>
+                        <InputSelect @bind-Value="appointment.PatientId" id="patientSelect" disabled class="form-control">
+                            <option value="">-- Choose a Patient --</option>
+                            @if (patients != null && patients.Any())
+                            {
+                                @foreach (var p in patients)
+                                {
+                                    <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => appointment.PatientId)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date:</label>
+                        <InputDate @bind-Value="appointment.Date" disabled class="form-control" />
+                        <ValidationMessage For="@(() => appointment.Date)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Appointment Date, Time & Status:</label>
+                        <InputText @bind-Value="oldAppointment" class="form-control" disabled />
+                        
+                    </div>
+                        
+                        
+
+                    <div class="mb-3">
+                        <label class="form-label">Status:</label>
+                        <InputText @bind-Value="appointment.Status" disabled  class="form-control">
+                            
+                        </InputText>
+                        <ValidationMessage For="@(() => appointment.Status)" />
+                    </div>
+
+                }
+                @* <div>
+                    <label>Available Times:</label>
+                    <InputSelect @bind-value="appointment.Time" >
+                        <option> @appointment.Time -- No Change</option>
+                        <option>Pick A Time </option>
+                        @foreach(var slot in AvailableSlots)
                         {
-                            <option value="@p.PatientId">@($"{p.FirstName} {p.LastName}")</option>
+                            <option value="@slot.Time">@slot.Time</option>
                         }
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => appointment.PatientId)" />
-            </div>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => appointment.Time)" />
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Date:</label>
-                <InputDate @bind-Value="appointment.Date" class="form-control" />
-                <ValidationMessage For="@(() => appointment.Date)" />
-            </div>
+                <div class="mb-3">
+                    <label class="form-label">Status:</label>
+                    <InputSelect @bind-Value="appointment.Status" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="Checked In">Checked In</option>
+                        <option value="In Progress">In Progress </option>
+                        @if(appointment.Status != "Completed" && appointment.Status != "Canceled")
+                        {
+                            <option value="Completed">Completed</option>
+                            <option value="Canceled">Canceled</option>
+                        }
+                        else
+                        {
+                            <option value="@appointment.Status">@appointment.Status</option>
 
-            <div class="mb-3">
-                <label class="form-label">Current Appointment Time:</label>
-                <InputText @bind-Value="oldAppointment" class="form-control" disabled />
-                
-            </div>
-            
-            <div>
-                <label>Available Times:</label>
-                <InputSelect @bind-value="appointment.Time" >
-                    <option>Pick A Time </option>
-                    @foreach(var slot in AvailableSlots)
-                    {
-                        <option value="@slot.Time">@slot.Time</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => appointment.Time)" />
-            </div>
+                        }
+                        
+                    </InputSelect>
+                    <ValidationMessage For="@(() => appointment.Status)" />
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Status:</label>
-                <InputSelect @bind-Value="appointment.Status" class="form-control">
-                    <option value="Pending">Pending</option>
-                    <option value="Checked In">Checked In</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Canceled">Canceled</option>
-                </InputSelect>
-                <ValidationMessage For="@(() => appointment.Status)" />
-            </div>
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <button type="button" class="btn btn-danger ms-2" @onclick="DeleteAppointment">Delete Appointment</button>
+            </EditForm> *@
+            </EditForm>
+        @* }
+        else 
+        {
 
-            <button type="submit" class="btn btn-success">Save Changes</button>
-            <button type="button" class="btn btn-danger ms-2" @onclick="DeleteAppointment">Delete Appointment</button>
-        </EditForm>
+        } *@
+        
     }
 }
 
@@ -116,11 +210,24 @@ else
 
     };
 
+    private Appointment oldAppointmentInfo = new Appointment
+    {
+            PatientId = -1, // default part to check to see if user is logged in or not
+            Name = "FirstName LastName",
+            Date = DateTime.Now,
+            Time = "7:00 PM",
+            Status = "Pending",
+            AppointSetterId = -1 //default part of check to see if user is logged in
+
+    };
+
     private string? oldAppointment;
     private List<Patient> patients = new();
     private string? Message;
     private int providerId = -1; // For testing, we set a dummy provider ID
     private string? profileType;
+
+    
 
     private DateTime changeTrigger = DateTime.Now;
     public class AppointmentSlot
@@ -199,7 +306,10 @@ else
         if(foundAppointment != null)
         {
             appointment = foundAppointment;
-            oldAppointment = foundAppointment.Time;
+            oldAppointment = $"Date: {foundAppointment.Date.ToString("MM/dd/yyyy")}    Time: {foundAppointment.Time}    Status: {foundAppointment.Status}";
+            oldAppointmentInfo.Time = foundAppointment.Time;
+            oldAppointmentInfo.Status = foundAppointment.Status;
+            
             StateHasChanged();
 
         }
@@ -275,6 +385,24 @@ private void GetAvailableSlots()
         {
             var currentTime = AppState.mountainTimeNow.Hour;
             dayAppointments = AppState.Appointments.Where(a => a.Date.ToString("MM/dd/yyyy") == chosenDay.ToString("MM/dd/yyyy")).ToList();
+            
+            
+            if(!AvailableSlots.Any(a => a.Time == oldAppointmentInfo.Time))
+            {
+                AvailableSlots.Add(new AppointmentSlot 
+                    {
+                        Time = oldAppointmentInfo.Time,
+                        AvailableCount = 0
+                    }
+                );
+            }
+            @* else
+            {
+                foreach(var i in AvailableSlots)
+                {
+                    Console.WriteLine($"***********************Here is the Time ----- {i.Time} and here is available slotssssssssss  {i.AvailableCount}");
+                }
+            } *@
 
             for (int hour = 0; hour <24; hour++)
             {
@@ -291,6 +419,11 @@ private void GetAvailableSlots()
                 }
                 StateHasChanged();
 
+            }
+
+            foreach(var i in AvailableSlots)
+            {
+                Console.WriteLine($"Here is the Time ----- {i.Time} and here is available slotssssssssss  {i.AvailableCount}");
             }
         }
         //This will handle all future days
@@ -354,7 +487,9 @@ private void GetAvailableSlots()
                 Time = appointment.Time,
                 Status = appointment.Status
             };  *@
-            oldAppointment = appointment.Time;
+            oldAppointment = $"Date: {appointment.Date.ToString("MM/dd/yyyy")}    Time: {appointment.Time}    Status: {appointment.Status}";
+            oldAppointmentInfo.Status = appointment.Status;
+            @* oldAppointment = appointment.Time; *@
             @* NavigationManager.NavigateTo("/sp-create-appointment"); *@
         }
         else
