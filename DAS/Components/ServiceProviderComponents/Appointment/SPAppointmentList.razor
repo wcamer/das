@@ -10,87 +10,87 @@
 @inject AuthService AuthService
 
 
-    @if (userId <= 0)
+@if (userId <= 0)
+{
+    <p>-------- Login to view information --------</p>
+}
+else
+{
+    <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
+        @(ShowAppointments ? "Hide Appointments" : "Show Appointments")
+    </button>
+    @if (ShowAppointments)
     {
-        <p>-------- Login to view information --------</p>
-    }
-    else
-    {
-        <button @onclick="ToggleAppointments" class="btn btn-primary mb-2">
-            @(ShowAppointments ? "Hide Appointments" : "Show Appointments")
-        </button>
-        @if (ShowAppointments)
+
+        @if (appointments.Any())
         {
 
-            @if (appointments.Any())
-            {
-
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>
-                                <input @bind="SearchName" placeholder="Name">
-                            </th>
-                            <th>
-                                <select @bind="SearchDate">
-                                    <option value="">Date</option>
-                                    <option value="@DateTime.Today.ToString("MM/dd/yyyy")">Today's Date</option>
-                                    @foreach (var date in appointments.Select(a => a.Date.ToString("MM/dd/yyyy")).Distinct())
-                                    {
-                                        <option value="@date">@date</option>
-                                    }
-                                </select>
-                            </th>
-                            <th>
-                                Time
-                            </th>
-                            <th>
-                                <select @bind="SearchStatus">
-                                    <option value="">Status</option>
-                                    @foreach (var status in appointments.Select(a => a.Status).Distinct())
-                                    {
-                                        <option value="@status">@status</option>
-                                    }
-                                </select>
-                            </th>
-                            <th>
-                                Action
-                            </th>
-                            @* this is for testing *@
-                            @* <th>Appointment Id</th> *@
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @* Here the logic will go "for each appointment in appointments display the following: 
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input @bind="SearchName" placeholder="Name">
+                        </th>
+                        <th>
+                            <select @bind="SearchDate">
+                                <option value="">Date</option>
+                                <option value="@DateTime.Today.ToString("MM/dd/yyyy")">Today's Date</option>
+                                @foreach (var date in appointments.Select(a => a.Date.ToString("MM/dd/yyyy")).Distinct())
+                                {
+                                    <option value="@date">@date</option>
+                                }
+                            </select>
+                        </th>
+                        <th>
+                            Time
+                        </th>
+                        <th>
+                            <select @bind="SearchStatus">
+                                <option value="">Status</option>
+                                @foreach (var status in appointments.Select(a => a.Status).Distinct())
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </th>
+                        <th>
+                            Action
+                        </th>
+                        @* this is for testing *@
+                        @* <th>Appointment Id</th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Here the logic will go "for each appointment in appointments display the following: 
                                     Name (first and last), Date of appointment, Time, Vehichle info, Status " *@
 
-                        @if (appointments.Any())
+                    @if (appointments.Any())
+                    {
+                        @foreach (var appointment in FilteredAppointments)
                         {
-                            @foreach (var appointment in FilteredAppointments)
-                            {
+                            <tr>
+                                <td>
+                                    @(appointment.Name)
 
-                                var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
-                                var infoRoute = $"/patient-details/{appointment.PatientId}";
-                                <tr>
-                                    <td>
-                                        @(appointment.Name)
+                                </td>
+                                <td>
+                                    @(appointment.Date.ToString("MM/dd/yyyy"))
+                                </td>
+                                <td>
+                                    @(appointment.Time)
+                                </td>
 
-                                    </td>
-                                    <td>
-                                        @(appointment.Date.ToString("MM/dd/yyyy"))
-                                    </td>
-                                    <td>
-                                        @(appointment.Time)
-                                    </td>
-
-                                    <td>
-                                        @(appointment.Status)
-                                    </td>
-                                    @* The edit and delete options will depend on what the status is.  
+                                <td>
+                                    @(appointment.Status)
+                                </td>
+                                @* The edit and delete options will depend on what the status is.  
                                                 If it's pending, then edit and delete will be displayed, 
                                                 else then it will show a message that it isn't changeable  *@
-                                    @*  hardcooded for Albert wesker*@
-
+                                @*  hardcooded for Albert wesker*@
+                                @if (appointment.Status != "Completed" && appointment.Status != "Canceled")
+                                {
+                                    var editRoute = $"/sp-edit-appointment/{appointment.AppointmentId}";
+                                    var infoRoute = $"/patient-details/{appointment.PatientId}";
                                     <td>
                                         <button>
                                             @* <NavLink class="nav-link" href=$"/edit-appointment/{appointment.AppointmentId}"> *@
@@ -106,22 +106,32 @@
                                     </td>
                                     @* for dev testing *@
                                     @* <td>
-                                        @(appointment.AppointmentId)
-                                    </td> *@
+                                                @(appointment.AppointmentId)
+                                            </td> *@
+                                }
+                                else
+                                {
+                                    <td>
+                                        <p>N/A</p>
+                                    </td>
+                                }
 
-                                </tr>
-                            }
+
+
+
+                            </tr>
                         }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p>-------- No Appointments Scheduled ---------</p>
-            }
+                    }
+                </tbody>
+            </table>
         }
-
+        else
+        {
+            <p>-------- No Appointments Scheduled ---------</p>
+        }
     }
+
+}
 
 
 
