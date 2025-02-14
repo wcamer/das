@@ -13,9 +13,12 @@ else
 {
     @if (appointments != null)
     {
-        @* hardcoded for albert wesker appointsetterid 1 and patientid 1 *@
-        @* hardcoded fail test is 10 *@
-        @if (appointments.Any(a => (a.AppointSetterId == userId && (a.Status == "Completed" || a.Status == "Canceled"))))
+        @* This condition will make sure there is at least 1 appointment that is either completed or canceled
+            and that it matches the filtered patient list that contains only the patients that are connected to the logged in user's profile        
+         *@
+
+        @if (appointments.Any(a => ((patients.Any(p => a.Name == $"{p.FirstName} {p.LastName}"))
+        && (a.Status == "Completed" || a.Status == "Canceled"))))
         {
             <div>
                 <table class="table">
@@ -37,33 +40,29 @@ else
                     </thead>
 
                     <tbody>
-                        @* Go through all the appointments and if they PatientId or ApointSetterId is equal to the logged in user AND the Status is "Completed"*@
-                        @foreach (var appointment in appointments)
+                        @* This will go through all the appointments and pick out the appointments where the name matches the filtered list of patients and the status is completed or canceled*@
+                        @foreach (var appointment in appointments.Where(a =>
+                                    patients.Any(p => a.Name == $"{p.FirstName} {p.LastName}")
+                                    && (a.Status == "Completed" || a.Status == "Canceled")))
                         {
-                            @* This is hardcodedfor albert wesker profileid 1 and patientid 1 *@
-                            @* Note: the AppointSetterId is a Profile owner's ProfileId *@
-                            @if ((appointment.AppointSetterId == userId) && (appointment.Status == "Completed" || appointment.Status
-                           == "Canceled"))
-                            {
-                                <tr>
-                                    <td>
-                                        @(appointment.Name)
-                                    </td>
-                                    <td>
-                                        @(appointment.Date.ToString("MM/dd/yyyy"))
-                                    </td>
+                            <tr>
+                                <td>
+                                    @(appointment.Name)
+                                </td>
+                                <td>
+                                    @(appointment.Date.ToString("MM/dd/yyyy"))
+                                </td>
 
-                                    <td>
-                                        @(appointment.Status)
-                                    </td>
+                                <td>
+                                    @(appointment.Status)
+                                </td>
 
-                                    @* for dev testing *@
-                                    @* <td>
-                                        @(appointment.AppointmentId)
-                                    </td> *@
+                                @* for dev testing *@
+                                @* <td>
+                                    @(appointment.AppointmentId)
+                                </td> *@
 
-                                </tr>
-                            }
+                            </tr>
 
                         }
 
@@ -97,6 +96,7 @@ else
 @code {
 
     private List<Appointment> appointments = [];
+    private List<Patient> patients = [];
 
     private int userId = -1;
 
@@ -128,6 +128,9 @@ else
             await AppState.LoadListsAsync();
             //Copies the the data in the Appointments in the state file to the local variable
             appointments = AppState.OrderedAppointments;
+            var allPatients = AppState.Patients;
+            patients = allPatients.Where(p => p.ProfileId == userId).ToList();
+
             StateHasChanged();
 
         }
@@ -139,24 +142,6 @@ else
 
 
 
-
-
-    //ChangEditAppointmentTargett was here
-
-
-    //SAveEditAppointment Target was here
-
-
-
-
-
-    //LOGIN stuff
-
-    //GetLoggedInuser was here
-
-
-
-    // SetLoggedInuser was here
 
 
 
